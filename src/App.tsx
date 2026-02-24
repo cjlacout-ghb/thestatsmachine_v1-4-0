@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { AppData, Team, Tournament, Player, Game } from './types';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import type { AppData, Team, Tournament, Player, Game, TabId } from './types';
 import { loadData, saveData } from './lib/storage';
 import { mockPlayers, mockGames, mockTournament, mockTeam } from './data/mockData';
 import { TeamsHub } from './components/ui/TeamsHub';
@@ -11,10 +11,7 @@ import { AppContent } from './components/layout/AppContent';
 import './index.css';
 import { HierarchyStepper } from './components/ui/HierarchyStepper';
 
-type TabId = 'players' | 'tournaments' | 'team' | 'games' | 'stats';
 
-
-// TABS moved to dynamic generation based on state
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabId>('players');
@@ -70,25 +67,31 @@ function App() {
     }
   }, [activeTeam, activeTournament]);
 
-  // Filter tournaments by active team
-  const filteredTournaments = activeTeam
-    ? data.tournaments.filter(t => t.participatingTeamIds?.includes(activeTeam.id))
-    : [];
+  // Derived data — memoized to avoid recomputing on every render
+  const filteredTournaments = useMemo(
+    () => activeTeam ? data.tournaments.filter(t => t.participatingTeamIds?.includes(activeTeam.id)) : [],
+    [data.tournaments, activeTeam]
+  );
 
-  // Get filtered data
-  // Players now belong to Team
-  const filteredPlayers = activeTeam
-    ? data.players.filter(p => p.teamId === activeTeam.id)
-    : [];
+  const filteredPlayers = useMemo(
+    () => activeTeam ? data.players.filter(p => p.teamId === activeTeam.id) : [],
+    [data.players, activeTeam]
+  );
 
-  const filteredGames = activeTournament
-    ? data.games.filter(g => g.tournamentId === activeTournament.id)
-    : useMockData ? mockGames : [];
+  const filteredGames = useMemo(
+    () => activeTournament
+      ? data.games.filter(g => g.tournamentId === activeTournament.id)
+      : (useMockData ? mockGames : []),
+    [data.games, activeTournament, useMockData]
+  );
 
-  // Search scope: All games for the active team
-  const searchGames = activeTeam
-    ? data.games.filter(g => filteredTournaments.some(t => t.id === g.tournamentId))
-    : [];
+  // All games for the active team (across all its tournaments) — used by global search
+  const searchGames = useMemo(
+    () => activeTeam
+      ? data.games.filter(g => filteredTournaments.some(t => t.id === g.tournamentId))
+      : [],
+    [data.games, activeTeam, filteredTournaments]
+  );
 
   // Manual Save Handler
   const handleManualSave = useCallback(async () => {
@@ -130,14 +133,21 @@ function App() {
   const handleDeleteTeam = useCallback(async (id: string) => {
     if (window.confirm('Delete this team and all its tournaments, players, and games?')) {
       try {
-        const newData = { ...data };
-        newData.teams = newData.teams.filter(t => t.id !== id);
-        newData.tournaments = newData.tournaments.filter(t => !t.participatingTeamIds?.includes(id));
-        newData.players = newData.players.filter(p => p.teamId !== id);
-        newData.games = newData.games.filter(g => {
-          const tournament = data.tournaments.find(t => t.id === g.tournamentId);
-          return tournament && tournament.participatingTeamIds?.includes(id);
-        });
+        // Collect tournament IDs belonging to this team so we can purge their games
+        const removedTournamentIds = new Set(
+          data.tournaments
+            .filter(t => t.participatingTeamIds?.includes(id))
+            .map(t => t.id)
+        );
+
+        const newData: AppData = {
+          ...data,
+          teams: data.teams.filter(t => t.id !== id),
+          tournaments: data.tournaments.filter(t => !t.participatingTeamIds?.includes(id)),
+          players: data.players.filter(p => p.teamId !== id),
+          // Remove games that belong to any of the deleted team's tournaments
+          games: data.games.filter(g => !removedTournamentIds.has(g.tournamentId)),
+        };
 
         await saveData(newData);
         setData(newData);
@@ -367,26 +377,22 @@ function App() {
           onNavigateSearch={() => { }}
           onOpenHelp={() => setModalType('help')}
         />
-        <div>
-          <TeamsHub
-            teams={data.teams}
-            tournaments={data.tournaments}
-            games={data.games}
-            onSelectTeam={(team) => {
-              setActiveTeam(team);
-              // Default to Players Tab
-              setActiveTab('players');
-              // Reset active tournament
-              setActiveTournament(null);
-            }}
-            onAddTeam={() => setModalType('team')}
-            onEditTeam={(team) => { setEditItem(team); setModalType('team'); }}
-            onDeleteTeam={(team) => handleDeleteTeam(team.id)}
-            onDemoData={loadMockData}
-            onImportData={handleImportData}
-            onOpenHelp={() => setModalType('help')}
-          />
-        </div>
+        <TeamsHub
+          teams={data.teams}
+          tournaments={data.tournaments}
+          games={data.games}
+          onSelectTeam={(team) => {
+            setActiveTeam(team);
+            setActiveTab('players');
+            setActiveTournament(null);
+          }}
+          onAddTeam={() => setModalType('team')}
+          onEditTeam={(team) => { setEditItem(team); setModalType('team'); }}
+          onDeleteTeam={(team) => handleDeleteTeam(team.id)}
+          onDemoData={loadMockData}
+          onImportData={handleImportData}
+          onOpenHelp={() => setModalType('help')}
+        />
         <AppModals
           modalType={modalType}
           editItem={editItem}
@@ -406,9 +412,6 @@ function App() {
       </div>
     );
   }
-
-  // Dynamic Tabs - REPLACED BY SIDEBAR
-  // const currentTabs = ...
 
   const getCurrentStep = () => {
     if (['team', 'players'].includes(activeTab)) return 1;

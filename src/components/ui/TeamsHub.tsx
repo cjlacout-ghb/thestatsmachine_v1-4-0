@@ -1,8 +1,5 @@
-import React, { useRef } from 'react';
 import type { AppData, Team, Tournament, Game } from '../../types';
-import { EmptyState } from './EmptyState';
 import { HierarchyStepper } from './HierarchyStepper';
-import { SoftballLogo } from './SoftballLogo';
 
 interface TeamsHubProps {
     teams: Team[];
@@ -18,19 +15,16 @@ interface TeamsHubProps {
 }
 
 
-export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, onEditTeam, onDeleteTeam, onDemoData, onImportData, onOpenHelp }: TeamsHubProps) {
-    const fileInputRef = useRef<HTMLInputElement>(null);
+export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, onEditTeam, onDeleteTeam, onDemoData, onImportData, onOpenHelp: _onOpenHelp }: TeamsHubProps) {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        console.log('File selected:', file?.name);
         if (!file) return;
 
         const reader = new FileReader();
         reader.onload = (event) => {
             try {
                 const content = event.target?.result as string;
-                console.log('File read successfully, parsing JSON...');
                 const json = JSON.parse(content);
                 onImportData(json as AppData);
                 // Clear input so same file can be selected again

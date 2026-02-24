@@ -90,6 +90,9 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
         };
     };
 
+    // Computed once per render (not per row)
+    const hasCatcherOnTeam = players.some(p => p.primaryPosition === 'C');
+
     return (
         <div className="modal-content" style={{ maxWidth: activeSubTab === 'stats' ? '1200px' : '600px', width: '95vw', transition: 'max-width 0.3s ease' }}>
             <div className="modal-header">
@@ -139,7 +142,7 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
                                     <select
                                         className="form-control"
                                         value={gameType}
-                                        onChange={e => setGameType(e.target.value as any)}
+                                        onChange={e => setGameType(e.target.value as Game['gameType'])}
                                     >
                                         <option value="regular">Regular Season</option>
                                         <option value="playoff">Playoff</option>
@@ -381,7 +384,6 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
                                         const calcPitch = calcPitching(stats);
                                         const calcField = calcFielding(stats);
                                         const isCatcher = player.primaryPosition === 'C';
-                                        const hasCatcherOnTeam = players.some(p => p.primaryPosition === 'C');
 
                                         const cellStyle: React.CSSProperties = { padding: '4px 2px' };
                                         const inputStyle: React.CSSProperties = { width: '42px', padding: '3px', fontSize: '0.8rem' };
@@ -494,7 +496,8 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
                                                 )}
                                             </tr>
                                         );
-                                    })}
+                                    })
+                                    }
                                 </tbody>
                             </table>
                         </div>

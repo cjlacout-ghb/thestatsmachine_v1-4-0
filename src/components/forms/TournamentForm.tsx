@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { Tournament, Team } from '../../types';
 import { generateId } from '../../lib/storage';
 
@@ -12,7 +12,8 @@ interface TournamentFormProps {
 
 export function TournamentForm({ tournament, availableTeams, initialTeamId, onSave, onCancel }: TournamentFormProps) {
     const [name, setName] = useState(tournament?.name || '');
-    const [participatingTeamIds, setParticipatingTeamIds] = useState<string[]>(
+    // participatingTeamIds is set once and used in handleSubmit; the setter is unused after init
+    const [participatingTeamIds] = useState<string[]>(
         tournament?.participatingTeamIds || (initialTeamId ? [initialTeamId] : [])
     );
     const [startDate, setStartDate] = useState(tournament?.startDate || '');

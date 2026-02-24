@@ -68,8 +68,6 @@ export async function resetDatabase(): Promise<void> {
     // Clean up session-related identifiers
     localStorage.removeItem('tsm_active_team');
     localStorage.removeItem('tsm_active_tournament');
-    localStorage.removeItem('tsm_active_team_id');
-    localStorage.removeItem('tsm_active_tournament_id');
 
     // Full reload to clear app state and start fresh
     window.location.reload();

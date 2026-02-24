@@ -110,17 +110,17 @@ export function StorageSettings({ onStorageChange, onClose }: StorageSettingsPro
                     {/* SECTION 2 — DANGER ZONE */}
                     <div className="card" style={{
                         padding: 'var(--space-lg)',
-                        border: '2px solid #ff4d4f',
-                        background: 'rgba(255, 77, 79, 0.05)'
+                        border: '2px solid var(--danger-color)',
+                        background: 'color-mix(in srgb, var(--danger-color) 5%, transparent)'
                     }}>
-                        <h4 className="text-bold mb-md" style={{ fontSize: '0.9rem', color: '#ff4d4f' }}>Danger Zone</h4>
+                        <h4 className="text-bold mb-md" style={{ fontSize: '0.9rem', color: 'var(--danger-color)' }}>Danger Zone</h4>
 
                         {!isResetting ? (
                             <button
                                 className="btn"
                                 style={{
                                     width: '100%',
-                                    backgroundColor: '#ff4d4f',
+                                    backgroundColor: 'var(--danger-color)',
                                     color: 'white',
                                     display: 'flex',
                                     justifyContent: 'center',
@@ -133,7 +133,7 @@ export function StorageSettings({ onStorageChange, onClose }: StorageSettingsPro
                             </button>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
-                                <p style={{ fontSize: '0.8125rem', color: '#ff4d4f', fontWeight: '500' }}>
+                                <p style={{ fontSize: '0.8125rem', color: 'var(--danger-color)', fontWeight: '500' }}>
                                     Warning: You are about to permanently erase all Teams, Players, Tournaments, and Games.
                                     This action CANNOT be undone.
                                 </p>
@@ -142,11 +142,11 @@ export function StorageSettings({ onStorageChange, onClose }: StorageSettingsPro
                                 </p>
                                 <input
                                     type="text"
-                                    className="input"
+                                    className="form-control"
                                     value={resetValidationText}
                                     onChange={(e) => setResetValidationText(e.target.value)}
                                     placeholder="Type RESET here"
-                                    style={{ border: '1px solid #ff4d4f' }}
+                                    style={{ border: '1px solid var(--danger-color)' }}
                                     autoFocus
                                 />
                                 <div style={{ display: 'flex', gap: 'var(--space-sm)', marginTop: 'var(--space-sm)' }}>
@@ -164,7 +164,7 @@ export function StorageSettings({ onStorageChange, onClose }: StorageSettingsPro
                                         className="btn"
                                         style={{
                                             flex: 1,
-                                            backgroundColor: resetValidationText === 'RESET' ? '#ff4d4f' : '#ff4d4f80',
+                                            backgroundColor: resetValidationText === 'RESET' ? 'var(--danger-color)' : 'color-mix(in srgb, var(--danger-color) 50%, transparent)',
                                             color: 'white',
                                             cursor: resetValidationText === 'RESET' ? 'pointer' : 'not-allowed'
                                         }}

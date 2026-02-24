@@ -29,7 +29,7 @@ export function AppHeader({
     onNavigateSearch,
     onOpenHelp,
     onSwitchTeam,
-    onManualSave
+    onManualSave: _onManualSave
 }: AppHeaderProps) {
     return (
         <header className="app-header">

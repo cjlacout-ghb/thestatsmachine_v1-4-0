@@ -15,7 +15,7 @@ interface GamesTabProps {
     highlightedItemId?: string | null;
 }
 
-export function GamesTab({ games, players, tournament, onSelectGame, onAddGame, onEditTournament, onDeleteTournament, teamName = 'Team', highlightedItemId }: GamesTabProps) {
+export function GamesTab({ games, players, tournament: _tournament, onSelectGame, onAddGame, onEditTournament: _onEditTournament, onDeleteTournament: _onDeleteTournament, teamName = 'Team', highlightedItemId }: GamesTabProps) {
     if (games.length === 0) {
         return (
             <div className="dash-content">

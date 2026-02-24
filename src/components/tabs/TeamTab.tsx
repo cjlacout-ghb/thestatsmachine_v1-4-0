@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { Team, Game, Player } from '../../types';
 import { calcBatting, calcPitching, calcFielding, formatAvg, formatERA, formatPct, getAvgLevel, getERALevel, getFldLevel, getOBPLevel, getSLGLevel, getOPSLevel } from '../../lib/calculations';
 import { formatLocalDate } from '../../lib/dateUtils';
@@ -80,35 +81,43 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
         );
     }
 
-    // ── Aggregate season stats ────────────────────────────────────────────────
-    const allStats = games.flatMap(g => g.playerStats);
-    const batting = calcBatting(allStats);
-    const pitching = calcPitching(allStats);
-    const fielding = calcFielding(allStats);
+    // ── Memoized computations ─────────────────────────────────────────────────
+    const sorted = useMemo(() => sortedGames(games), [games]);
+    const recentGames = useMemo(() => sorted.slice(0, 5), [sorted]);
+
+    const { batting, pitching, fielding } = useMemo(() => {
+        const allStats = games.flatMap(g => g.playerStats);
+        return {
+            batting: calcBatting(allStats),
+            pitching: calcPitching(allStats),
+            fielding: calcFielding(allStats),
+        };
+    }, [games]);
 
     // ── Record + streak ───────────────────────────────────────────────────────
-    const wins = games.filter(g => g.teamScore > g.opponentScore).length;
-    const losses = games.filter(g => g.teamScore < g.opponentScore).length;
-    const ties = games.filter(g => g.teamScore === g.opponentScore).length;
-    const streak = computeStreak(games);
+    const wins = useMemo(() => games.filter(g => g.teamScore > g.opponentScore).length, [games]);
+    const losses = useMemo(() => games.filter(g => g.teamScore < g.opponentScore).length, [games]);
+    const ties = useMemo(() => games.filter(g => g.teamScore === g.opponentScore).length, [games]);
+    const streak = useMemo(() => computeStreak(games), [games]);
     const streakLabel = streak ? `${streak} Streak` : `${games.length} GP`;
 
     // ── Trend deltas vs last 5 games ──────────────────────────────────────────
-    const sorted = sortedGames(games);
-    const last5 = sorted.slice(0, 5);
-    const last5Stats = last5.flatMap(g => g.playerStats);
-    const last5Bat = calcBatting(last5Stats);
-    const last5Pit = calcPitching(last5Stats);
-    const last5Fld = calcFielding(last5Stats);
-
-    const avgDelta = games.length >= 5 ? last5Bat.avg - batting.avg : null;
-    const eraDelta = games.length >= 5 ? last5Pit.era - pitching.era : null;
-    const fldDelta = games.length >= 5 ? last5Fld.fldPct - fielding.fldPct : null;
+    const { avgDelta, eraDelta, fldDelta } = useMemo(() => {
+        if (games.length < 5) return { avgDelta: null, eraDelta: null, fldDelta: null };
+        const last5Stats = sorted.slice(0, 5).flatMap(g => g.playerStats);
+        const last5Bat = calcBatting(last5Stats);
+        const last5Pit = calcPitching(last5Stats);
+        const last5Fld = calcFielding(last5Stats);
+        return {
+            avgDelta: last5Bat.avg - batting.avg,
+            eraDelta: last5Pit.era - pitching.era,
+            fldDelta: last5Fld.fldPct - fielding.fldPct,
+        };
+    }, [games, sorted, batting, pitching, fielding]);
 
     function trendLabel(delta: number | null, invert = false): { text: string; up: boolean } {
         if (delta === null) return { text: 'vs last 5 games', up: true };
         const up = invert ? delta < 0 : delta > 0;
-        const abs = Math.abs(delta);
         return { text: `${delta > 0 ? '+' : ''}${fmtDelta(delta, 3)} vs last 5`, up };
     }
 
@@ -117,29 +126,28 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
     const fldTrend = trendLabel(fldDelta);
 
     // ── Sparkline chart: per-game team batting avg ────────────────────────────
-    const chartGames = sorted.slice(0, 10).reverse(); // oldest → newest
-    const perGameAvgs = chartGames.map(g => {
-        const s = calcBatting(g.playerStats);
-        return s.avg;
-    });
-    const sparklinePoints = buildSparkline(perGameAvgs);
-    const lastAvg = perGameAvgs.length > 0 ? perGameAvgs[perGameAvgs.length - 1] : null;
-    const minV = Math.min(...perGameAvgs, 0.1);
-    const maxV = Math.max(...perGameAvgs, 0.4);
-    const range = maxV - minV || 0.1;
+    const { chartGames, perGameAvgs, sparklinePoints, lastAvg, minV, range } = useMemo(() => {
+        const chartGames = sorted.slice(0, 10).reverse();
+        const perGameAvgs = chartGames.map(g => calcBatting(g.playerStats).avg);
+        const sparklinePoints = buildSparkline(perGameAvgs);
+        const lastAvg = perGameAvgs.length > 0 ? perGameAvgs[perGameAvgs.length - 1] : null;
+        const minV = Math.min(...perGameAvgs, 0.1);
+        const maxV = Math.max(...perGameAvgs, 0.4);
+        const range = maxV - minV || 0.1;
+        return { chartGames, perGameAvgs, sparklinePoints, lastAvg, minV, range };
+    }, [sorted]);
 
     // ── Top 3 season performers ───────────────────────────────────────────────
-    const leaderboard = players.map(player => {
-        const pgs = games.flatMap(g => g.playerStats.filter(ps => ps.playerId === player.id));
-        if (pgs.length === 0) return null;
-        const s = calcBatting(pgs);
-        const totalRBI = pgs.reduce((t, g) => t + g.rbi, 0);
-        const totalH = pgs.reduce((t, g) => t + g.h, 0);
-        return { player, avg: s.avg, rbi: totalRBI, h: totalH, g: pgs.length };
-    }).filter(Boolean).sort((a, b) => b!.avg - a!.avg).slice(0, 3) as { player: Player; avg: number; rbi: number; h: number; g: number }[];
-
-    // ── Recent games (last 5) ─────────────────────────────────────────────────
-    const recentGames = sorted.slice(0, 5);
+    const leaderboard = useMemo(() =>
+        players.map(player => {
+            const pgs = games.flatMap(g => g.playerStats.filter(ps => ps.playerId === player.id));
+            if (pgs.length === 0) return null;
+            const s = calcBatting(pgs);
+            const totalRBI = pgs.reduce((t, g) => t + g.rbi, 0);
+            const totalH = pgs.reduce((t, g) => t + g.h, 0);
+            return { player, avg: s.avg, rbi: totalRBI, h: totalH, g: pgs.length };
+        }).filter(Boolean).sort((a, b) => b!.avg - a!.avg).slice(0, 3) as { player: Player; avg: number; rbi: number; h: number; g: number }[],
+        [players, games]);
 
     return (
         <div className="dash-content">
@@ -372,7 +380,7 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
                                 </span>
                                 {/* Opponent */}
                                 <span className="text-bold" style={{ flex: 1, fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                    {g.isHome ? 'vs' : '@'} {g.opponent}
+                                    {g.homeAway === 'home' ? 'vs' : '@'} {g.opponent}
                                 </span>
                                 {/* Score */}
                                 <span className="text-mono text-bold" style={{ fontSize: '0.9rem', color: resultColor }}>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { Game, Player, Tournament } from '../../types';
 import { calcBatting, calcPitching, calcFielding, formatAvg, formatERA, formatWHIP, formatIP, parseIP, getAvgLevel, getERALevel, getFldLevel } from '../../lib/calculations';
 import { StatTable } from '../ui/StatTable';
@@ -43,7 +43,7 @@ export function StatsTab({ games, players, tournament, onAddGame, onAddPlayer }:
     const [view, setView] = useState<StatsView>('batting');
 
     // ── Build batting rows ──────────────────────────────────────────────────
-    const battingData: PlayerBattingRow[] = players.map(player => {
+    const battingData: PlayerBattingRow[] = useMemo(() => players.map(player => {
         const pgs = games.flatMap(g => g.playerStats.filter(ps => ps.playerId === player.id));
         const s = calcBatting(pgs);
         return {
@@ -60,10 +60,10 @@ export function StatsTab({ games, players, tournament, onAddGame, onAddPlayer }:
             so: pgs.reduce((t, g) => t + g.so, 0),
             avg: s.avg, obp: s.obp, slg: s.slg, ops: s.ops,
         };
-    }).filter(p => p.g > 0);
+    }).filter(p => p.g > 0), [games, players]);
 
     // ── Build pitching rows ─────────────────────────────────────────────────
-    const pitchingData: PlayerPitchingRow[] = players.map(player => {
+    const pitchingData: PlayerPitchingRow[] = useMemo(() => players.map(player => {
         const pgs = games.flatMap(g => g.playerStats.filter(ps => ps.playerId === player.id && ps.ip > 0));
         if (pgs.length === 0) return null;
         const s = calcPitching(pgs);
@@ -80,10 +80,10 @@ export function StatsTab({ games, players, tournament, onAddGame, onAddPlayer }:
             pitchCount: pgs.reduce((t, g) => t + g.pitchCount, 0),
             era: s.era, whip: s.whip, kPerBB: s.kBB,
         };
-    }).filter(Boolean) as PlayerPitchingRow[];
+    }).filter(Boolean) as PlayerPitchingRow[], [games, players]);
 
     // ── Build fielding rows ─────────────────────────────────────────────────
-    const fieldingData: PlayerFieldingRow[] = players.map(player => {
+    const fieldingData: PlayerFieldingRow[] = useMemo(() => players.map(player => {
         const pgs = games.flatMap(g => g.playerStats.filter(ps => ps.playerId === player.id && (ps.po > 0 || ps.a > 0 || ps.e > 0)));
         if (pgs.length === 0) return null;
         const s = calcFielding(pgs);
@@ -98,7 +98,7 @@ export function StatsTab({ games, players, tournament, onAddGame, onAddPlayer }:
             cCS: pgs.reduce((t, g) => t + (g.cCS ?? 0), 0),
             cSB: pgs.reduce((t, g) => t + (g.cSB ?? 0), 0),
         };
-    }).filter(Boolean) as PlayerFieldingRow[];
+    }).filter(Boolean) as PlayerFieldingRow[], [games, players]);
 
     // ── Column definitions ──────────────────────────────────────────────────
     const battingColumns = [

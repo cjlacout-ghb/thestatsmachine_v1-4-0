@@ -13,7 +13,7 @@ interface TournamentsTabProps {
     onDeleteTournament: (t: Tournament) => void;
 }
 
-export function TournamentsTab({ tournaments, games, teams, onSelectTournament, onAddTournament, onEditTournament, onDeleteTournament }: TournamentsTabProps) {
+export function TournamentsTab({ tournaments, games, teams: _teams, onSelectTournament, onAddTournament, onEditTournament: _onEditTournament, onDeleteTournament: _onDeleteTournament }: TournamentsTabProps) {
     return (
         <div className="dash-content">
             {/* Removed redundant section-header */}
