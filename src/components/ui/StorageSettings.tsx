@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { loadData, saveData, resetDatabase } from '../../lib/storage';
+import { downloadJSON } from '../../lib/fileDownloader';
 
 interface StorageSettingsProps {
     onStorageChange: () => void;
@@ -21,13 +22,10 @@ export function StorageSettings({ onStorageChange, onClose }: StorageSettingsPro
     const handleManualExport = async () => {
         try {
             const data = await loadData();
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `stats_backup_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
+            downloadJSON(
+                data,
+                `stats_backup_${new Date().toISOString().split('T')[0]}.json`
+            );
         } catch (err) {
             console.error('Export failed:', err);
             alert('Failed to export data.');

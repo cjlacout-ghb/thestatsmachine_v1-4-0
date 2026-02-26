@@ -9,13 +9,12 @@ interface TeamsHubProps {
     onAddTeam: () => void;
     onEditTeam?: (team: Team) => void;
     onDeleteTeam?: (team: Team) => void;
-    onDemoData?: () => void;
     onImportData: (data: AppData) => void;
     onOpenHelp: () => void;
 }
 
 
-export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, onEditTeam, onDeleteTeam, onDemoData, onImportData, onOpenHelp: _onOpenHelp }: TeamsHubProps) {
+export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, onEditTeam, onDeleteTeam, onImportData, onOpenHelp: _onOpenHelp }: TeamsHubProps) {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -25,13 +24,16 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
         reader.onload = (event) => {
             try {
                 const content = event.target?.result as string;
+                if (!content || content.trim() === '') {
+                    throw new Error("File is completely empty.");
+                }
                 const json = JSON.parse(content);
                 onImportData(json as AppData);
                 // Clear input so same file can be selected again
                 if (e.target) e.target.value = '';
             } catch (err) {
                 console.error('Import error:', err);
-                alert('Invalid JSON file format.');
+                alert('Invalid JSON file format. Please upload a valid The Stats Machine backup file.');
             }
         };
         reader.onerror = () => {
@@ -80,15 +82,6 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                                 </label>
                             </div>
                         </div>
-
-                        {onDemoData && (
-                            <button
-                                onClick={onDemoData}
-                                className="link-demo-data"
-                            >
-                                or view demo data
-                            </button>
-                        )}
                     </main>
                 </div>
             </div>

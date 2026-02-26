@@ -6,9 +6,11 @@ interface SidebarProps {
     activeTeam: Team | null;
     activeTournament: Tournament | null;
     onExitTournament: () => void;
+    tournaments?: Tournament[];
+    onSelectTournament?: (t: Tournament) => void;
 }
 
-export function Sidebar({ activeTab, setActiveTab, activeTeam, activeTournament, onExitTournament }: SidebarProps) {
+export function Sidebar({ activeTab, setActiveTab, activeTeam, activeTournament, onExitTournament, tournaments = [], onSelectTournament }: SidebarProps) {
     if (!activeTeam) return null;
 
     return (
@@ -54,6 +56,27 @@ export function Sidebar({ activeTab, setActiveTab, activeTeam, activeTournament,
                         <span className="icon">🏆</span>
                         <span>All Events</span>
                     </button>
+
+                    {tournaments.map(t => (
+                        <button
+                            key={t.id}
+                            className={`sidebar-item ${activeTournament?.id === t.id ? 'active' : ''}`}
+                            onClick={() => {
+                                if (onSelectTournament) onSelectTournament(t);
+                            }}
+                            style={{ paddingLeft: '2.5rem', fontSize: '0.9em' }}
+                            title={t.name}
+                        >
+                            <span style={{
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                maxWidth: '100%'
+                            }}>
+                                {t.name}
+                            </span>
+                        </button>
+                    ))}
                 </nav>
 
                 {/* ACTIVE EVENT SUB-SECTION */}

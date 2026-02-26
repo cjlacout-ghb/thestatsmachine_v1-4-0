@@ -89,11 +89,20 @@ export function generateId(): string {
  * Parses player list text (CSV/Tab) into Player objects.
  */
 export function parsePlayerImport(text: string, teamId: string): Player[] {
-    const lines = text.trim().split('\n');
+    const firstLine = text.split('\n')[0] || '';
+    const delimiter = firstLine.includes('\t') ? '\t' : ',';
+
+    const rows = text
+        .trim()
+        .split('\n')
+        .map(row => row.split(delimiter).map(cell => cell.trim().replace(/^"|"$/g, '')));
+
+    // First row is always headers — skip it
+    const [_headers, ...dataRows] = rows;
+
     const players: Player[] = [];
 
-    for (const line of lines) {
-        const parts = line.split(/[,\t]/).map(s => s.trim());
+    for (const parts of dataRows) {
         if (parts.length >= 2) {
             players.push({
                 id: generateId(),

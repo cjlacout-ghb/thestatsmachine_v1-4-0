@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import type { Player, Position } from '../../types';
 import { generateId, parsePlayerImport } from '../../lib/storage';
+import { downloadCSVTemplate, downloadTXTTemplate } from '../../lib/fileDownloader';
 
 const POSITIONS: Position[] = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DP', 'FLEX'];
 
@@ -66,6 +67,7 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
         reader.readAsText(file);
     };
 
+
     const handleImport = () => {
         const players = parsePlayerImport(importText, teamId);
         if (players.length > 0 && onBulkImport) {
@@ -80,7 +82,7 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
             <div className="modal-content">
                 <div className="modal-header">
                     <h3>Bulk Player Import</h3>
-                    <p>Upload CSV or paste roster data from your league portal</p>
+                    <p>Upload CSV/TXT or paste roster data from your league portal</p>
                 </div>
 
                 <div className="modal-body">
@@ -98,6 +100,14 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
                                 Select CSV or TXT File
                             </button>
                             <p className="text-muted mt-sm" style={{ fontSize: '0.75rem' }}>Format: Name, Jersey#, Position (one per line)</p>
+                            <div style={{ display: 'flex', gap: 'var(--space-md)', marginTop: 'var(--space-md)', justifyContent: 'center' }}>
+                                <button type="button" className="btn btn-ghost btn-sm" onClick={downloadCSVTemplate} style={{ color: 'var(--primary-color)' }}>
+                                    📥 Download Template (.csv)
+                                </button>
+                                <button type="button" className="btn btn-ghost btn-sm" onClick={downloadTXTTemplate} style={{ color: 'var(--primary-color)' }}>
+                                    📥 Download Template (.txt)
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -107,7 +117,7 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
                             className="form-control"
                             value={importText}
                             onChange={e => setImportText(e.target.value)}
-                            placeholder="Sofia Martinez, 7, SS&#10;Emma Rodriguez, 22, P"
+                            placeholder="Name, Jersey, Position&#10;Sofia Martinez, 7, SS&#10;Emma Rodriguez, 22, P"
                             rows={6}
                         />
                     </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { AppData, Team, Tournament, Player, Game, TabId } from './types';
 import { loadData, saveData } from './lib/storage';
-import { mockPlayers, mockGames, mockTournament, mockTeam } from './data/mockData';
+
 import { TeamsHub } from './components/ui/TeamsHub';
 import { Sidebar } from './components/ui/Sidebar';
 import { AppHeader } from './components/layout/AppHeader';
@@ -20,7 +20,7 @@ function App() {
   const [activeTournament, setActiveTournament] = useState<Tournament | null>(null);
   const [modalType, setModalType] = useState<ModalType>(null);
   const [editItem, setEditItem] = useState<Team | Tournament | Player | Game | null>(null);
-  const [useMockData, setUseMockData] = useState(false);
+
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
@@ -81,8 +81,8 @@ function App() {
   const filteredGames = useMemo(
     () => activeTournament
       ? data.games.filter(g => g.tournamentId === activeTournament.id)
-      : (useMockData ? mockGames : []),
-    [data.games, activeTournament, useMockData]
+      : [],
+    [data.games, activeTournament]
   );
 
   // All games for the active team (across all its tournaments) — used by global search
@@ -155,7 +155,7 @@ function App() {
           setActiveTeam(null);
           setActiveTournament(null);
         }
-        setUseMockData(false);
+
       } catch (error) {
         console.error('Delete failed:', error);
         alert('Failed to delete team.');
@@ -203,7 +203,7 @@ function App() {
           setActiveTournament(null);
           setActiveTab('tournaments');
         }
-        setUseMockData(false);
+
       } catch (error) {
         console.error('Delete failed:', error);
         alert('Failed to delete tournament.');
@@ -306,19 +306,7 @@ function App() {
     }
   }, [data]);
 
-  const loadMockData = async () => {
-    const mockData: AppData = {
-      teams: [mockTeam],
-      tournaments: [mockTournament],
-      players: mockPlayers,
-      games: mockGames
-    };
-    await saveData(mockData);
-    setData(mockData);
-    setActiveTeam(mockTeam);
-    setActiveTournament(mockTournament);
-    setUseMockData(false);
-  };
+
 
 
 
@@ -361,7 +349,7 @@ function App() {
   }, []);
 
   // Entry Point: Teams Hub
-  if (!activeTeam && !useMockData) {
+  if (!activeTeam) {
     return (
       <div className="app">
         <AppHeader
@@ -389,7 +377,7 @@ function App() {
           onAddTeam={() => setModalType('team')}
           onEditTeam={(team) => { setEditItem(team); setModalType('team'); }}
           onDeleteTeam={(team) => handleDeleteTeam(team.id)}
-          onDemoData={loadMockData}
+
           onImportData={handleImportData}
           onOpenHelp={() => setModalType('help')}
         />
@@ -404,6 +392,12 @@ function App() {
           onSaveTournament={handleSaveTournament}
           onSavePlayer={handleSavePlayer}
           onSaveGame={handleSaveGame}
+          onSaveGameStats={(gameId, stats) => {
+            const updatedGames = data.games.map((g) =>
+              g.id === gameId ? { ...g, playerStats: stats } : g
+            );
+            saveData({ ...data, games: updatedGames });
+          }}
           onDeletePlayer={handleDeletePlayer}
           onDeleteGame={handleDeleteGame}
           onBulkImportPlayers={handleBulkImportPlayers}
@@ -447,32 +441,7 @@ function App() {
 
 
 
-      {/* Mock data banner */}
-      {useMockData && (
-        <div className="banner info" style={{
-          padding: '8px 16px',
-          textAlign: 'center',
-          fontSize: '0.875rem',
-          fontWeight: '500'
-        }}>
-          💡 Viewing demo data.
-          <button
-            onClick={loadMockData}
-            className="btn-link"
-            style={{ color: 'white', marginLeft: 'var(--space-md)' }}
-          >
-            Save as my data
-          </button>
-          <span style={{ margin: '0 var(--space-sm)', opacity: 0.8 }}>or</span>
-          <button
-            onClick={() => { setUseMockData(false); setModalType('team'); }}
-            className="btn-link"
-            style={{ color: 'white' }}
-          >
-            Start fresh
-          </button>
-        </div>
-      )}
+
 
       <div className="app-container">
         <Sidebar
@@ -487,6 +456,11 @@ function App() {
             setActiveTournament(null);
             setActiveTab('tournaments');
             setHighlightedItemId(null);
+          }}
+          tournaments={filteredTournaments}
+          onSelectTournament={(t) => {
+            setActiveTournament(t);
+            setActiveTab('games');
           }}
         />
 
@@ -511,13 +485,14 @@ function App() {
             padding: 'var(--space-lg) var(--space-xl)',
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'flex-start',
+            alignItems: 'center',
             borderBottom: '1px solid var(--border-light)',
-            marginBottom: 'var(--space-lg)'
+            marginBottom: 'var(--space-lg)',
+            background: 'var(--bg-card)'
           }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
               <div>
-                <h2 className="text-bold" style={{ fontSize: '1.5rem', letterSpacing: '-0.02em', textTransform: 'uppercase' }}>
+                <h2 className="text-bold" style={{ fontSize: '1.75rem', letterSpacing: '-0.02em' }}>
                   {activeTab === 'team' && 'Team Overview'}
                   {activeTab === 'players' && 'Roster Management'}
                   {activeTab === 'tournaments' && 'Event Management'}
@@ -525,29 +500,34 @@ function App() {
                   {activeTab === 'stats' && 'Performance Stats'}
                 </h2>
               </div>
+              <p style={{ color: 'var(--text-muted)', margin: 0 }}>
+                {activeTab === 'tournaments' && 'Manage your tournaments and track team performance'}
+                {activeTab !== 'tournaments' && 'View and carefully manage your team assets'}
+              </p>
+            </div>
 
-              <div style={{ display: 'flex', gap: 'var(--space-md)', flexWrap: 'wrap' }}>
-                {activeTeam && (
-                  <div className="identity-badge" onClick={() => { setEditItem(activeTeam); setModalType('team'); }} style={{ cursor: 'pointer' }}>
-                    <div className="identity-icon">🥎</div>
-                    <div className="identity-info">
-                      <span className="identity-label">Active Team</span>
-                      <span className="identity-name">{activeTeam.name}</span>
-                    </div>
-                    <span style={{ fontSize: '0.7rem', marginLeft: '4px', opacity: 0.5 }}>⚙️</span>
+            <div style={{ display: 'flex', gap: 'var(--space-md)', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', cursor: 'pointer' }} onClick={() => { setEditItem(activeTeam); setModalType('team'); }}>
+                <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '2px' }}>Active Team</span>
+                <div className="identity-badge" style={{ margin: 0, borderColor: 'var(--border-light)' }}>
+                  <div className="identity-icon" style={{ background: 'var(--bg-subtle)' }}>🥎</div>
+                  <div className="identity-info">
+                    <span className="identity-name">{activeTeam?.name}</span>
                   </div>
-                )}
-                {activeTournament && (
-                  <div className="identity-badge" onClick={() => { setEditItem(activeTournament); setModalType('tournament'); }} style={{ cursor: 'pointer', borderColor: 'var(--avg)' }}>
+                </div>
+              </div>
+
+              {activeTournament && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', cursor: 'pointer', marginLeft: '1rem', paddingLeft: '1rem', borderLeft: '1px solid var(--border-light)' }} onClick={() => { setEditItem(activeTournament); setModalType('tournament'); }}>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '2px' }}>Active Event</span>
+                  <div className="identity-badge" style={{ margin: 0, borderColor: 'var(--avg)' }}>
                     <div className="identity-icon" style={{ background: 'var(--avg)' }}>🏆</div>
                     <div className="identity-info">
-                      <span className="identity-label">Active Event</span>
                       <span className="identity-name">{activeTournament.name}</span>
                     </div>
-                    <span style={{ fontSize: '0.7rem', marginLeft: '4px', opacity: 0.5 }}>⚙️</span>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -579,6 +559,7 @@ function App() {
             onEditTournament={(t) => { setEditItem(t); setModalType('tournament'); }}
             onDeleteTeam={(id) => handleDeleteTeam(id)}
             onDeleteTournament={(id) => handleDeleteTournament(id)}
+            onOpenPlayerStats={(g) => { setEditItem(g); setModalType('player_stats'); }}
           />
 
           <AppModals
@@ -592,6 +573,12 @@ function App() {
             onSaveTournament={handleSaveTournament}
             onSavePlayer={handleSavePlayer}
             onSaveGame={handleSaveGame}
+            onSaveGameStats={(gameId, stats) => {
+              const updatedGames = data.games.map((g) =>
+                g.id === gameId ? { ...g, playerStats: stats } : g
+              );
+              saveData({ ...data, games: updatedGames });
+            }}
             onDeletePlayer={handleDeletePlayer}
             onDeleteGame={handleDeleteGame}
             onBulkImportPlayers={handleBulkImportPlayers}

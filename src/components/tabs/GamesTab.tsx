@@ -11,11 +11,12 @@ interface GamesTabProps {
     onAddGame?: () => void;
     onEditTournament?: (t: Tournament) => void;
     onDeleteTournament?: (id: string) => void;
+    onOpenPlayerStats?: (game: Game) => void;
     teamName?: string;
     highlightedItemId?: string | null;
 }
 
-export function GamesTab({ games, players, tournament: _tournament, onSelectGame, onAddGame, onEditTournament: _onEditTournament, onDeleteTournament: _onDeleteTournament, teamName = 'Team', highlightedItemId }: GamesTabProps) {
+export function GamesTab({ games, players, tournament: _tournament, onSelectGame, onAddGame, onEditTournament: _onEditTournament, onDeleteTournament: _onDeleteTournament, onOpenPlayerStats, teamName = 'Team', highlightedItemId }: GamesTabProps) {
     if (games.length === 0) {
         return (
             <div className="dash-content">
@@ -143,6 +144,15 @@ export function GamesTab({ games, players, tournament: _tournament, onSelectGame
                                                 <>{game.inningsPlayed?.toFixed(1) || '7.0'} - {game.opponentInningsPlayed?.toFixed(1) || '7.0'} INN</>
                                             )}
                                         </div>
+                                        <button
+                                            className="btn btn-secondary btn-sm mt-sm"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (onOpenPlayerStats) onOpenPlayerStats(game);
+                                            }}
+                                        >
+                                            {game.playerStats && game.playerStats.length > 0 ? "✅ Player Stats" : "📈 Player Stats"}
+                                        </button>
                                     </div>
                                 </div>
                             </div>

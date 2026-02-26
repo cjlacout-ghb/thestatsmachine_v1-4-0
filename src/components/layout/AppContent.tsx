@@ -28,6 +28,7 @@ interface AppContentProps {
     onEditTournament: (t: Tournament) => void;
     onDeleteTeam: (id: string) => void;
     onDeleteTournament: (id: string) => void;
+    onOpenPlayerStats: (g: Game) => void;
 }
 
 export function AppContent({
@@ -50,7 +51,8 @@ export function AppContent({
     onEditGame,
     onEditTournament,
     onDeleteTeam,
-    onDeleteTournament
+    onDeleteTournament,
+    onOpenPlayerStats
 }: AppContentProps) {
 
     const renderTab = () => {
@@ -103,6 +105,7 @@ export function AppContent({
                         onAddGame={onAddGame}
                         onEditTournament={onEditTournament}
                         onDeleteTournament={onDeleteTournament}
+                        onOpenPlayerStats={onOpenPlayerStats}
                         teamName={activeTeam?.name}
                         highlightedItemId={highlightedItemId}
                     />
