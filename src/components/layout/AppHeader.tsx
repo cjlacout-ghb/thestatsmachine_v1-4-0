@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { GlobalSearch } from '../ui/GlobalSearch';
-import { SoftballLogo } from '../ui/SoftballLogo';
 import type { Team, Tournament, Player, Game, AppData } from '../../types';
 
 interface AppHeaderProps {
@@ -51,9 +50,7 @@ export function AppHeader({
             <div className="header-content">
                 {/* Logo / Team Name */}
                 <div className="logo" onClick={onSwitchTeam} style={{ cursor: 'pointer' }}>
-                    <div className="logo-icon header-logo-icon">
-                        <SoftballLogo size={24} />
-                    </div>
+                    <div className="logo-icon header-logo-icon">🥎</div>
                     <div className="logo-text">
                         <h1>The Stats Machine</h1>
                         <span>{activeTeam ? activeTeam.name : 'Organization Hub'} • v1.3.0</span>

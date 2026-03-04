@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { AppData, Team, Tournament, Player, Game, TabId } from './types';
 import { loadData, saveData, saveTeam, deleteTeam, saveTournament, savePlayer, saveGame, deleteTournament, deletePlayer, deleteGame, storageManager, LocalStorageDriver } from './lib/storage';
-import { mockPlayers, mockGames, mockTournament, mockTeam } from './data/mockData';
+
 import { TeamsHub } from './components/ui/TeamsHub';
 import { Sidebar } from './components/ui/Sidebar';
 import { AppHeader } from './components/layout/AppHeader';
@@ -18,7 +18,7 @@ function App() {
   const [activeTournament, setActiveTournament] = useState<Tournament | null>(null);
   const [modalType, setModalType] = useState<ModalType>(null);
   const [editItem, setEditItem] = useState<Team | Tournament | Player | Game | null>(null);
-  const [useMockData, setUseMockData] = useState(false);
+
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
@@ -82,8 +82,8 @@ function App() {
   const filteredGames = useMemo(
     () => activeTournament
       ? data.games.filter(g => g.tournamentId === activeTournament.id)
-      : (useMockData ? mockGames : []),
-    [data.games, activeTournament, useMockData]
+      : [],
+    [data.games, activeTournament]
   );
 
   const searchGames = useMemo(
@@ -193,13 +193,7 @@ function App() {
     }
   }, [data]);
 
-  const loadMockData = async () => {
-    const mock: AppData = { teams: [mockTeam], tournaments: [mockTournament], players: mockPlayers, games: mockGames };
-    await saveData(mock);
-    setData(mock);
-    setActiveTeam(mockTeam);
-    setActiveTournament(mockTournament);
-  };
+
 
   const onSaveToDisk = async () => {
     // PDF or JSON export logic would go here
@@ -207,7 +201,7 @@ function App() {
   };
 
   // Entry Point: Teams Hub
-  if (!activeTeam && !useMockData) {
+  if (!activeTeam) {
     return (
       <div className="app">
         {data.teams.length > 0 && (
@@ -237,7 +231,7 @@ function App() {
           onAddTeam={() => setModalType('team')}
           onEditTeam={(team) => { setEditItem(team); setModalType('team'); }}
           onDeleteTeam={(team) => handleDeleteTeam(team.id)}
-          onDemoData={loadMockData}
+          /* onDemoData eliminado */
           onImportData={handleImportData}
           onOpenHelp={() => setModalType('help')}
         />

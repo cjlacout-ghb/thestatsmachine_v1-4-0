@@ -176,8 +176,7 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                                         </button>
                                     </div>
 
-                                    {/* La flecha ahora está dentro del flujo correcto */}
-                                    <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)', position: 'relative', zIndex: 10 }}>→</span>
+
                                 </div>
 
                             </div>
@@ -185,26 +184,15 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                     })}
 
                     <div className="team-hub-card add-card" onClick={onAddTeam}>
-                        <div className="team-card-icon">+</div>
-                        <div className="team-card-info">
-                            <h3 className="team-name">Add Team</h3>
-                            <p className="team-desc">Register another squad or organization.</p>
+                        <div className="team-card-content">
+                            <div className="team-card-icon">+</div>
+                            <div className="team-card-info">
+                                <h3 className="team-name">Add Team</h3>
+                                <p className="team-desc">Register another squad or organization.</p>
+                            </div>
                         </div>
                     </div>
 
-                    <label className="team-hub-card add-card" style={{ cursor: 'pointer', borderColor: 'var(--avg)', color: 'var(--avg)' }}>
-                        <div className="team-card-icon">📥</div>
-                        <div className="team-card-info">
-                            <h3 className="team-name">Import Data</h3>
-                            <p className="team-desc">Restore a previously saved session.</p>
-                            <input
-                                type="file"
-                                accept=".json"
-                                style={{ display: 'none' }}
-                                onChange={handleFileChange}
-                            />
-                        </div>
-                    </label>
                 </div>
             </main>
         </div >
