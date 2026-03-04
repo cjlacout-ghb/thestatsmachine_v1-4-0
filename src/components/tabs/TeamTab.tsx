@@ -61,7 +61,7 @@ function buildSparkline(perGameAvgs: number[]): string {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManageRoster }: TeamTabProps) {
+export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManageRoster, onEditTeam, onDeleteTeam }: TeamTabProps) {
     if (!team) return null;
 
     if (games.length === 0) {
@@ -313,6 +313,20 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
                                 <div>
                                     <p className="text-bold" style={{ fontSize: '0.875rem' }}>Roster Management</p>
                                     <p className="text-muted" style={{ fontSize: '0.75rem' }}>Edit player details</p>
+                                </div>
+                            </div>
+                            <div className="player-card" onClick={() => onEditTeam?.(team)} style={{ padding: 'var(--space-md)', flexDirection: 'row', textAlign: 'left', cursor: 'pointer' }}>
+                                <div className="logo-icon" style={{ borderRadius: '50%', width: '40px', height: '40px', fontSize: '16px', background: 'var(--avg)', color: 'white', boxShadow: 'none' }}>⚙️</div>
+                                <div>
+                                    <p className="text-bold" style={{ fontSize: '0.875rem' }}>Edit Team Details</p>
+                                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Rename or change description</p>
+                                </div>
+                            </div>
+                            <div className="player-card" onClick={() => { if (team) onDeleteTeam?.(team.id); }} style={{ padding: 'var(--space-md)', flexDirection: 'row', textAlign: 'left', cursor: 'pointer', borderColor: 'var(--under)' }}>
+                                <div className="logo-icon" style={{ borderRadius: '50%', width: '40px', height: '40px', fontSize: '16px', background: 'var(--under)', color: 'white', boxShadow: 'none' }}>🗑️</div>
+                                <div>
+                                    <p className="text-bold" style={{ fontSize: '1rem', color: 'var(--under)' }}>Delete Team</p>
+                                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Permanently remove organization</p>
                                 </div>
                             </div>
                         </div>

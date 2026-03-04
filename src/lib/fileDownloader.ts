@@ -20,10 +20,62 @@ export const downloadTXTTemplate = () => {
     triggerDownload(content, 'player_stats_template.txt', 'text/plain');
 };
 
-export const downloadJSON = (data: unknown, filename: string) => {
+/**
+ * saveJSONWithDialog(data, suggestedFilename)
+ *
+ * Opens a native OS "Save As" dialog using the File System Access API
+ * so the user can choose exactly where to save their backup file.
+ *
+ * Falls back to a silent browser download for browsers that don't
+ * support showSaveFilePicker (e.g. Firefox, Safari).
+ *
+ * Returns true if the file was saved, false if the user cancelled.
+ */
+export const saveJSONWithDialog = async (
+    data: unknown,
+    suggestedFilename: string
+): Promise<boolean> => {
+    const content = JSON.stringify(data, null, 2);
+
+    // --- File System Access API path (Chrome, Edge, Opera) ---
+    if ('showSaveFilePicker' in window) {
+        try {
+            const fileHandle = await (window as Window & typeof globalThis & {
+                showSaveFilePicker: (opts: unknown) => Promise<FileSystemFileHandle>
+            }).showSaveFilePicker({
+                suggestedName: suggestedFilename,
+                types: [
+                    {
+                        description: 'JSON Backup File',
+                        accept: { 'application/json': ['.json'] },
+                    },
+                ],
+            });
+
+            const writable = await fileHandle.createWritable();
+            await writable.write(content);
+            await writable.close();
+            return true;
+        } catch (err: unknown) {
+            // User pressed Cancel — not an error
+            if (err instanceof Error && err.name === 'AbortError') return false;
+            console.error('[saveJSONWithDialog] File System API error:', err);
+            throw err;
+        }
+    }
+
+    // --- Fallback: silent download to Downloads folder ---
+    triggerDownload(content, suggestedFilename, 'application/json');
+    return true;
+};
+
+
+/** Legacy helper used by StorageSettings — silent download to the Downloads folder. */
+export const downloadJSON = (data: unknown, filename: string): void => {
     const content = JSON.stringify(data, null, 2);
     triggerDownload(content, filename, 'application/json');
 };
+
 
 // Core engine — mirrors the robust pattern from pdfGenerator.ts exactly
 const triggerDownload = (

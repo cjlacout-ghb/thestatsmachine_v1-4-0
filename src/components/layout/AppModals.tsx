@@ -5,10 +5,10 @@ import { TournamentForm } from '../forms/TournamentForm';
 import { PlayerForm } from '../forms/PlayerForm';
 import { GameForm } from '../forms/GameForm';
 import { PlayerStatsModal } from '../forms/PlayerStatsModal';
-import { StorageSettings } from '../ui/StorageSettings';
+import { resetDatabase } from '../../lib/storage';
 
 
-export type ModalType = 'team' | 'tournament' | 'player' | 'game' | 'storage' | 'help' | 'player_stats' | null;
+export type ModalType = 'team' | 'tournament' | 'player' | 'game' | 'erase' | 'help' | 'player_stats' | 'delete_team' | null;
 
 interface AppModalsProps {
     modalType: ModalType;
@@ -24,8 +24,8 @@ interface AppModalsProps {
     onSaveGameStats: (gameId: string, stats: PlayerGameStats[]) => void;
     onDeletePlayer?: (id: string) => void;
     onDeleteGame?: (id: string) => void;
+    onDeleteTeamConfirm?: (id: string) => void;
     onBulkImportPlayers: (players: Player[]) => void;
-    onStorageReset: () => void;
 }
 
 export function AppModals({
@@ -42,8 +42,8 @@ export function AppModals({
     onSaveGameStats,
     onDeletePlayer,
     onDeleteGame,
+    onDeleteTeamConfirm,
     onBulkImportPlayers,
-    onStorageReset
 }: AppModalsProps) {
     if (!modalType) return null;
 
@@ -97,20 +97,122 @@ export function AppModals({
                         onCancel={onClose}
                     />
                 )}
-                {modalType === 'storage' && (
-                    <StorageSettings
-                        onStorageChange={onStorageReset}
-                        onClose={onClose}
-                    />
+                {modalType === 'erase' && (
+                    <EraseDataModal onClose={onClose} />
                 )}
                 {modalType === 'help' && (
                     <HelpModal onClose={onClose} />
+                )}
+                {modalType === 'delete_team' && editItem && (
+                    <DeleteConfirmModal
+                        team={editItem as Team}
+                        onClose={onClose}
+                        onConfirm={() => {
+                            if (onDeleteTeamConfirm) {
+                                onDeleteTeamConfirm((editItem as Team).id);
+                            }
+                        }}
+                    />
                 )}
             </div>
         </div>
     );
 }
 
+// ---------------------------------------------------------------------------
+// EraseDataModal — standalone, typed-confirmation destructive action
+// ---------------------------------------------------------------------------
+function EraseDataModal({ onClose }: { onClose: () => void }) {
+    const [validationText, setValidationText] = useState('');
+    const canErase = validationText === 'RESET';
+
+    return (
+        <div className="modal-content" style={{ minWidth: '420px', maxWidth: '480px' }}>
+            <div className="modal-header" style={{
+                background: 'linear-gradient(135deg, #b91c1c, #991b1b)',
+                borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0'
+            }}>
+                <h3 style={{ color: 'white', margin: 0 }}>⚠️ Erase All Data</h3>
+                <p style={{ color: 'rgba(255,255,255,0.8)', margin: '4px 0 0 0', fontSize: '0.875rem' }}>
+                    This action is permanent and cannot be undone.
+                </p>
+            </div>
+
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+                <div style={{
+                    background: 'color-mix(in srgb, var(--danger-color) 8%, transparent)',
+                    border: '1px solid var(--danger-color)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: 'var(--space-md)',
+                    fontSize: '0.875rem',
+                    lineHeight: '1.6'
+                }}>
+                    <p style={{ margin: '0 0 8px 0', fontWeight: 600, color: 'var(--danger-color)' }}>
+                        You are about to permanently erase:
+                    </p>
+                    <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--text-primary)' }}>
+                        <li>All Teams</li>
+                        <li>All Players</li>
+                        <li>All Tournaments</li>
+                        <li>All Game Records &amp; Stats</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <label style={{
+                        display: 'block',
+                        fontSize: '0.8125rem',
+                        fontWeight: 600,
+                        marginBottom: 'var(--space-xs)',
+                        color: 'var(--text-secondary)'
+                    }}>
+                        Type <strong style={{ color: 'var(--danger-color)', letterSpacing: '0.05em' }}>RESET</strong> to enable the erase button:
+                    </label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={validationText}
+                        onChange={e => setValidationText(e.target.value)}
+                        placeholder="Type RESET here"
+                        autoFocus
+                        style={{ border: `2px solid ${canErase ? 'var(--danger-color)' : 'var(--border-light)'}` }}
+                    />
+                </div>
+            </div>
+
+            <div className="modal-footer" style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+                <button
+                    className="btn btn-secondary"
+                    style={{ flex: 1 }}
+                    onClick={onClose}
+                >
+                    Cancel
+                </button>
+                <button
+                    className="btn"
+                    style={{
+                        flex: 1,
+                        background: canErase ? '#dc2626' : 'var(--bg-subtle)',
+                        color: canErase ? 'white' : 'var(--text-muted)',
+                        border: canErase ? '1px solid #dc2626' : '1px solid var(--border-light)',
+                        cursor: canErase ? 'pointer' : 'not-allowed',
+                        fontWeight: 700,
+                        transition: 'all 0.2s ease',
+                        boxShadow: canErase ? '0 2px 4px rgba(220, 38, 38, 0.2)' : 'none'
+                    }}
+                    disabled={!canErase}
+                    onClick={async () => { if (canErase) await resetDatabase(); }}
+                >
+                    Erase All Data
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// ---------------------------------------------------------------------------
+// HelpModal — bilingual help content (unchanged)
+// ---------------------------------------------------------------------------
 const helpContentEN = {
     title: "How Your Data is Saved",
     sections: [
@@ -127,12 +229,12 @@ const helpContentEN = {
         {
             icon: "📤",
             title: "How to Back Up Your Data",
-            body: "We strongly recommend exporting a backup regularly, especially before major tournaments or after entering a lot of data. To do this, go to Storage Configuration and click Export Backup. A .json file will be downloaded to your device. Keep this file somewhere safe — it contains everything."
+            body: "We strongly recommend saving a backup regularly, especially before major tournaments or after entering a lot of data. Click the 💾 Save button in the header. A .json file will be saved to the location you choose. Keep this file somewhere safe — it contains everything."
         },
         {
             icon: "📥",
             title: "How to Restore Your Data",
-            body: "If you switch devices, use a different browser, or accidentally lose your data, you can restore it from your backup file. Go to Storage Configuration, click Import Backup, and select your .json file. Your data will be fully restored in seconds."
+            body: "If you switch devices, use a different browser, or accidentally lose your data, you can restore it from your backup file. Click the 📥 Import Data button in the header and select your .json file. Your data will be fully restored in seconds."
         },
         {
             icon: "🗑️",
@@ -142,7 +244,7 @@ const helpContentEN = {
         {
             icon: "✅",
             title: "Best Practice",
-            body: "Export a backup after every important session. Store the file in a cloud folder like Google Drive or Dropbox so you always have access to it, even if you change devices."
+            body: "Save a backup after every important session. Store the file in a cloud folder like Google Drive or Dropbox so you always have access to it, even if you change devices."
         }
     ]
 };
@@ -163,12 +265,12 @@ const helpContentES = {
         {
             icon: "📤",
             title: "Cómo Hacer una Copia de Seguridad",
-            body: "Recomendamos exportar una copia de seguridad regularmente, especialmente antes de torneos importantes o después de ingresar muchos datos. Para hacerlo, ve a Configuración de Almacenamiento y haz clic en Exportar Copia de Seguridad. Se descargará un archivo .json en tu dispositivo. Guarda ese archivo en un lugar seguro — contiene todo."
+            body: "Recomendamos guardar una copia de seguridad regularmente, especialmente antes de torneos importantes o después de ingresar muchos datos. Haz clic en el botón 💾 Guardar del encabezado. Se guardará un archivo .json en la ubicación que elijas. Guarda ese archivo en un lugar seguro."
         },
         {
             icon: "📥",
             title: "Cómo Restaurar tus Datos",
-            body: "Si cambias de dispositivo, usas un navegador diferente, o accidentalmente pierdes tus datos, puedes restaurarlos desde tu archivo de copia de seguridad. Ve a Configuración de Almacenamiento, haz clic en Importar Copia de Seguridad y selecciona tu archivo .json. Tus datos se restaurarán completamente en segundos."
+            body: "Si cambias de dispositivo, usas un navegador diferente, o accidentalmente pierdes tus datos, puedes restaurarlos desde tu archivo de copia de seguridad. Haz clic en el botón 📥 Importar Datos del encabezado y selecciona tu archivo .json. Tus datos se restaurarán completamente en segundos."
         },
         {
             icon: "🗑️",
@@ -178,7 +280,7 @@ const helpContentES = {
         {
             icon: "✅",
             title: "Buenas Prácticas",
-            body: "Exporta una copia de seguridad después de cada sesión importante. Guarda el archivo en una carpeta en la nube como Google Drive o Dropbox para que siempre tengas acceso a él, incluso si cambias de dispositivo."
+            body: "Guarda una copia de seguridad después de cada sesión importante. Guarda el archivo en una carpeta en la nube como Google Drive o Dropbox para que siempre tengas acceso a él, incluso si cambias de dispositivo."
         }
     ]
 };
@@ -218,6 +320,66 @@ function HelpModal({ onClose }: { onClose: () => void }) {
             <div className="modal-footer">
                 <button className="btn btn-primary" onClick={onClose} style={{ width: '100%' }}>
                     {lang === 'en' ? 'Got it!' : '¡Entendido!'}
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// ---------------------------------------------------------------------------
+// DeleteConfirmModal — custom high-fidelity confirmation for team deletion
+// ---------------------------------------------------------------------------
+function DeleteConfirmModal({ team, onClose, onConfirm }: { team: Team, onClose: () => void, onConfirm: () => void }) {
+    return (
+        <div className="modal-content" style={{ minWidth: '400px', maxWidth: '450px' }}>
+            <div className="modal-header" style={{
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0'
+            }}>
+                <h3 style={{ color: 'white', margin: 0 }}>Delete Team?</h3>
+                <p style={{ color: 'rgba(255,255,255,0.9)', margin: '4px 0 0 0', fontSize: '0.85rem' }}>
+                    Confirm permanent removal of <strong>{team.name}</strong>.
+                </p>
+            </div>
+
+            <div className="modal-body" style={{ padding: 'var(--space-xl)' }}>
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 'var(--space-md)',
+                    textAlign: 'center'
+                }}>
+                    <div style={{ fontSize: '3rem', marginBottom: 'var(--space-sm)' }}>🥀</div>
+                    <p style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 600 }}>
+                        Are you absolutely sure?
+                    </p>
+                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                        This will permanently delete this team and all associated tournaments, rostered players, and game performance records.
+                    </p>
+                </div>
+            </div>
+
+            <div className="modal-footer" style={{ padding: 'var(--space-lg) var(--space-xl)', background: 'var(--bg-primary)' }}>
+                <button
+                    className="btn btn-secondary"
+                    style={{ flex: 1 }}
+                    onClick={onClose}
+                >
+                    Keep Team
+                </button>
+                <button
+                    className="btn"
+                    style={{
+                        flex: 1,
+                        background: '#dc2626',
+                        color: 'white',
+                        fontWeight: 700,
+                        border: 'none',
+                        boxShadow: '0 2px 8px rgba(220, 38, 38, 0.2)'
+                    }}
+                    onClick={onConfirm}
+                >
+                    Delete Forever
                 </button>
             </div>
         </div>
