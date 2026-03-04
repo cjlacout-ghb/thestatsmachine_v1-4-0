@@ -1,7 +1,6 @@
 import React from 'react';
 import type { AppData, Team, Tournament, Game } from '../../types';
 import { HierarchyStepper } from './HierarchyStepper';
-import { SoftballLogo } from './SoftballLogo';
 
 interface TeamsHubProps {
     teams: Team[];
@@ -49,12 +48,10 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
             <div className="app-hub">
                 <header className="hub-header">
                     <div className="logo">
-                        <div className="logo-icon header-logo-icon">
-                            <SoftballLogo size={24} />
-                        </div>
+                        <div className="logo-icon header-logo-icon">🥎</div>
                         <div className="logo-text">
                             <h1>The Stats Machine</h1>
-                            <span>v1.2.0</span>
+                            <span>v1.3.0</span>
                         </div>
                     </div>
                     <button

@@ -1,12 +1,12 @@
 # 🥎 The Stats Machine — Project Roadmap
-**Version 1.2.0** | Last updated: 2026-02-21
+**Version 1.3.0** | Last updated: 2026-03-04
 
 ---
 
 ## ✅ Accomplished
 
 ### 🏷️ Branding & Foundation
-- [x] Renamed and versioned app to **"The Stats Machine v1.2.0"** (browser tab, UI)
+- [x] Renamed and versioned app to **"The Stats Machine v1.3.0"** (browser tab, UI)
 - [x] Custom `SoftballLogo` component created
 - [x] Vite + React + TypeScript + ESLint scaffold in place
 

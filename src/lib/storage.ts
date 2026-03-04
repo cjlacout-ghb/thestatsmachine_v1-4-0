@@ -185,6 +185,8 @@ export async function deleteGame(id: string) {
 
 export async function resetDatabase() {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY + '_mirror');
+    localStorage.removeItem(DRIVER_PREF_KEY);
     localStorage.removeItem('tsm_active_team');
     localStorage.removeItem('tsm_active_tournament');
     window.location.reload();
