@@ -51,7 +51,7 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                         <div className="logo-icon header-logo-icon">🥎</div>
                         <div className="logo-text">
                             <h1>The Stats Machine</h1>
-                            <span>v1.3.0</span>
+                            <span>v1.4.0</span>
                         </div>
                     </div>
                     <button

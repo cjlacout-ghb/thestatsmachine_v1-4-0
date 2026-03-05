@@ -53,7 +53,7 @@ export function AppHeader({
                     <div className="logo-icon header-logo-icon">🥎</div>
                     <div className="logo-text">
                         <h1>The Stats Machine</h1>
-                        <span>{activeTeam ? activeTeam.name : 'Organization Hub'} • v1.3.0</span>
+                        <span>{activeTeam ? activeTeam.name : 'Organization Hub'} • v1.4.0</span>
                     </div>
                 </div>
 

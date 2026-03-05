@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { AppData, Team, Tournament, Player, Game, TabId } from './types';
 import { loadData, saveData, saveTeam, deleteTeam, saveTournament, savePlayer, saveGame, deleteTournament, deletePlayer, deleteGame, storageManager, LocalStorageDriver } from './lib/storage';
+import { saveJSONWithDialog } from './lib/fileDownloader';
 
 import { TeamsHub } from './components/ui/TeamsHub';
 import { Sidebar } from './components/ui/Sidebar';
@@ -23,8 +24,6 @@ function App() {
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
   const [showMigrationBanner, setShowMigrationBanner] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
-
   // Initialize and Load data
   useEffect(() => {
     const initApp = async () => {
@@ -179,7 +178,7 @@ function App() {
 
   const handleImportData = useCallback(async (imported: AppData) => {
     if (data.teams.length > 0 && !confirm('Overwrite all current data?')) return;
-    setIsImporting(true);
+
     try {
       await storageManager.setDriver(new LocalStorageDriver());
       await saveData(imported);
@@ -188,16 +187,59 @@ function App() {
       window.location.reload();
     } catch (e) {
       alert('Import failed');
-    } finally {
-      setIsImporting(false);
     }
   }, [data]);
 
 
 
   const onSaveToDisk = async () => {
-    // PDF or JSON export logic would go here
-    return true;
+    try {
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `thestatsmachine_backup_${dateStr}.json`;
+      const saved = await saveJSONWithDialog(data, filename);
+      if (saved) {
+        window.dispatchEvent(new CustomEvent('tsm:data-saved', { detail: { timestamp: new Date() } }));
+      }
+      return saved;
+    } catch (e) {
+      console.error('Failed to save to disk:', e);
+      return false;
+    }
+  };
+
+  const onLoadFromDisk = async () => {
+    try {
+      if ('showOpenFilePicker' in window) {
+        const [fileHandle] = await (window as any).showOpenFilePicker({
+          types: [{ description: 'JSON Backup File', accept: { 'application/json': ['.json'] } }],
+        });
+        const file = await fileHandle.getFile();
+        const text = await file.text();
+        const importedData = JSON.parse(text);
+        await handleImportData(importedData);
+      } else {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        input.onchange = async (e: any) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const text = await file.text();
+          try {
+            const importedData = JSON.parse(text);
+            await handleImportData(importedData);
+          } catch (err) {
+            alert('Invalid JSON file');
+          }
+        };
+        input.click();
+      }
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        console.error('Failed to load file:', err);
+        alert('Failed to load file: ' + err.message);
+      }
+    }
   };
 
   // Entry Point: Teams Hub
@@ -216,7 +258,7 @@ function App() {
             onOpenHelp={() => setModalType('help')}
             onSwitchTeam={() => setActiveTeam(null)}
             onSaveToDisk={onSaveToDisk}
-            onLoadFromDisk={() => { }}
+            onLoadFromDisk={onLoadFromDisk}
             onOpenErase={() => setModalType('erase')}
           />
         )}
@@ -278,7 +320,7 @@ function App() {
         onOpenHelp={() => setModalType('help')}
         onSwitchTeam={() => setActiveTeam(null)}
         onSaveToDisk={onSaveToDisk}
-        onLoadFromDisk={() => { }}
+        onLoadFromDisk={onLoadFromDisk}
         onOpenErase={() => setModalType('erase')}
       />
 
