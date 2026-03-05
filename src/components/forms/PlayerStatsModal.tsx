@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Game, Player, PlayerGameStats } from '../../types';
 import { getMonthStr, getDayStr } from '../../lib/dateUtils';
-import { downloadCSVTemplate, downloadTXTTemplate } from '../../lib/fileDownloader';
 
 interface PlayerStatsModalProps {
     game: Game;
@@ -136,28 +135,26 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
             </div>
 
             <div className="modal-body" style={{ padding: '0' }}>
-                <div style={{ display: 'flex', borderBottom: '1px solid var(--border-light)', padding: '0 var(--space-xl)' }}>
+                <div style={{
+                    display: 'flex',
+                    gap: 'var(--space-md)',
+                    padding: 'var(--space-md) var(--space-xl)',
+                    background: 'var(--bg-card-hover)',
+                    borderBottom: '1px solid var(--border-light)'
+                }}>
                     <button
-                        className="btn btn-ghost"
-                        style={{
-                            borderRadius: 0,
-                            borderBottom: activeTab === 'manual' ? '2px solid var(--primary-color)' : '2px solid transparent',
-                            color: activeTab === 'manual' ? 'var(--text-primary)' : 'var(--text-muted)'
-                        }}
+                        className={`btn ${activeTab === 'manual' ? 'btn-primary' : 'btn-ghost'}`}
+                        style={{ flex: 1, fontWeight: 'bold' }}
                         onClick={() => setActiveTab('manual')}
                     >
-                        Manual Entry
+                        📝 Manual Entry
                     </button>
                     <button
-                        className="btn btn-ghost"
-                        style={{
-                            borderRadius: 0,
-                            borderBottom: activeTab === 'bulk' ? '2px solid var(--primary-color)' : '2px solid transparent',
-                            color: activeTab === 'bulk' ? 'var(--text-primary)' : 'var(--text-muted)'
-                        }}
+                        className={`btn ${activeTab === 'bulk' ? 'btn-primary' : 'btn-ghost'}`}
+                        style={{ flex: 1, fontWeight: 'bold' }}
                         onClick={() => setActiveTab('bulk')}
                     >
-                        Bulk Import
+                        📋 Bulk Import
                     </button>
                 </div>
 
@@ -225,35 +222,52 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-sm)' }}>
                                     <div style={{ fontSize: '2rem' }}>📁</div>
                                     <h3 style={{ margin: 0 }}>Upload a .csv or .txt file</h3>
-                                    <input
-                                        type="file"
-                                        accept=".csv,.txt"
-                                        onChange={handleFileUpload}
-                                        style={{ marginTop: 'var(--space-sm)' }}
-                                    />
-                                    <div style={{ display: 'flex', gap: 'var(--space-md)', marginTop: 'var(--space-md)' }}>
-                                        <button
-                                            type="button"
-                                            className="btn btn-ghost btn-sm"
-                                            onClick={downloadCSVTemplate}
-                                            style={{ color: 'var(--primary-color)' }}
-                                        >
-                                            📥 Download Template (.csv)
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn btn-ghost btn-sm"
-                                            onClick={downloadTXTTemplate}
-                                            style={{ color: 'var(--primary-color)' }}
-                                        >
-                                            📥 Download Template (.txt)
-                                        </button>
-                                    </div>
+                                    <label
+                                        className="btn"
+                                        style={{
+                                            marginTop: 'var(--space-sm)',
+                                            cursor: 'pointer',
+                                            background: 'var(--bg-secondary)',
+                                            border: '1px solid var(--border-color)',
+                                            borderRadius: 'var(--radius-md)',
+                                            padding: 'var(--space-sm) var(--space-lg)',
+                                            fontWeight: '600',
+                                            color: 'var(--text-primary)',
+                                            boxShadow: 'var(--shadow-sm)',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                    >
+                                        Choose File
+                                        <input
+                                            type="file"
+                                            accept=".csv,.txt"
+                                            onChange={handleFileUpload}
+                                            style={{ display: 'none' }}
+                                        />
+                                    </label>
                                 </div>
                             </div>
 
-                            <div>
-                                <h4 style={{ margin: '0 0 var(--space-sm) 0' }}>Or paste your data here</h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+                                <div style={{
+                                    fontSize: '0.85rem',
+                                    color: 'var(--text-muted)',
+                                    background: 'var(--bg-subtle)',
+                                    border: '1px dashed var(--border-color)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    padding: 'var(--space-sm)',
+                                    marginBottom: 'var(--space-xs)'
+                                }}>
+                                    <p style={{ margin: '0 0 var(--space-xs) 0', fontWeight: '600', color: 'var(--text-primary)' }}>
+                                        Format Example (selectable):
+                                    </p>
+                                    <pre style={{ margin: 0, fontFamily: 'monospace', userSelect: 'all', whiteSpace: 'pre-wrap', cursor: 'text' }}>
+                                        Player Name, AB, H, R, RBI, K, BB, E
+                                        Jane Doe, 3, 2, 1, 0, 1, 0, 0
+                                        John Smith, 4, 1, 0, 0, 2, 1, 0</pre>
+                                </div>
+                                <h4 style={{ margin: 0 }}>Or paste your data here</h4>
+
                                 {importWarning && (
                                     <div style={{ padding: 'var(--space-sm)', background: 'var(--under-bg)', color: 'var(--under)', borderRadius: 'var(--radius-sm)', marginBottom: 'var(--space-sm)', fontSize: '0.85rem' }}>
                                         ⚠️ {importWarning}
@@ -262,7 +276,7 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
                                 <textarea
                                     className="form-input"
                                     style={{ width: '100%', minHeight: '150px', fontFamily: 'monospace', whiteSpace: 'pre' }}
-                                    placeholder="Paste CSV or tab-separated (TXT) data here.&#10;First row must be headers:&#10;Player Name, AB, H, R, RBI, K, BB, E&#10;&#10;CSV example:  Jane Doe, 3, 2, 1, 0, 1, 0, 0&#10;TXT example:  Jane Doe[TAB]3[TAB]2[TAB]1[TAB]0[TAB]1[TAB]0[TAB]0"
+                                    placeholder="Paste your CSV or tab-separated data here..."
                                     value={importText}
                                     onChange={(e) => setImportText(e.target.value)}
                                 />
