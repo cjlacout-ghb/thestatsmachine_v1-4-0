@@ -26,14 +26,21 @@ export function HierarchyStepper({ currentStep, onStepClick }: HierarchyStepperP
                     <div key={step.id} style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
                         <div
                             onClick={() => onStepClick?.(step.id)}
+                            className={`stepper-item ${onStepClick ? 'interactive' : ''} ${isActive ? 'active' : ''}`}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '16px',
-                                opacity: isActive ? 1 : 0.5,
                                 cursor: onStepClick ? 'pointer' : 'default',
-                                transition: 'all 0.3s ease',
-                                transform: isActive ? 'scale(1.05)' : 'scale(1)'
+                                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                                transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                                padding: '12px 20px',
+                                borderRadius: 'var(--radius-lg)',
+                                // Distinct colors for selected vs not selected
+                                background: isActive ? 'var(--bg-card)' : 'rgba(0, 0, 0, 0.02)',
+                                boxShadow: isActive ? 'var(--shadow-lg)' : 'none',
+                                border: isActive ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid transparent',
+                                opacity: isActive ? 1 : 0.8
                             }}
                         >
                             {/* Step Number Circle */}
@@ -42,22 +49,18 @@ export function HierarchyStepper({ currentStep, onStepClick }: HierarchyStepperP
                                 height: '48px',
                                 borderRadius: '50%',
                                 background: isActive
-                                    ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
-                                    : isCompleted
-                                        ? '#10b981'
-                                        : '#f1f5f9',
+                                    ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                                    : '#f1f5f9',
                                 border: isActive
-                                    ? '2px solid #2563eb'
-                                    : isCompleted
-                                        ? '2px solid #10b981'
-                                        : '2px solid #e2e8f0',
+                                    ? '2px solid #059669'
+                                    : '2px solid #e2e8f0',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 fontWeight: 700,
                                 fontSize: '1.125rem',
-                                color: isActive || isCompleted ? 'white' : '#94a3b8',
-                                boxShadow: isActive ? '0 4px 12px rgba(37, 99, 235, 0.3)' : 'none',
+                                color: isActive ? 'white' : '#94a3b8',
+                                boxShadow: isActive ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none',
                                 transition: 'all 0.3s ease'
                             }}>
                                 {isCompleted ? '✓' : step.id}
@@ -66,19 +69,21 @@ export function HierarchyStepper({ currentStep, onStepClick }: HierarchyStepperP
                             {/* Step Labels */}
                             <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 <span style={{
-                                    fontSize: '0.875rem',
+                                    fontSize: '0.9375rem',
                                     fontWeight: 700,
-                                    color: '#0f172a',
-                                    lineHeight: 1.2
+                                    color: isActive ? '#059669' : 'var(--text-secondary)',
+                                    lineHeight: 1.2,
+                                    transition: 'color 0.3s ease'
                                 }}>
-                                    {step.label}
+                                    {isActive && '• '}{step.label}
                                 </span>
                                 <span style={{
                                     fontSize: '0.7rem',
                                     fontWeight: 600,
-                                    color: '#94a3b8',
+                                    color: isActive ? 'var(--text-secondary)' : 'var(--text-muted)',
                                     textTransform: 'uppercase',
-                                    letterSpacing: '0.05em'
+                                    letterSpacing: '0.05em',
+                                    transition: 'color 0.3s ease'
                                 }}>
                                     {step.sublabel}
                                 </span>
@@ -88,11 +93,12 @@ export function HierarchyStepper({ currentStep, onStepClick }: HierarchyStepperP
                         {/* Connector Line */}
                         {index < steps.length - 1 && (
                             <div style={{
-                                width: '80px',
+                                width: '60px',
                                 height: '2px',
-                                background: isCompleted ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : '#e2e8f0',
+                                background: isCompleted ? '#10b981' : '#e2e8f0',
                                 borderRadius: '9999px',
-                                transition: 'all 0.3s ease'
+                                transition: 'all 0.3s ease',
+                                opacity: 0.5
                             }} />
                         )}
                     </div>
@@ -101,3 +107,4 @@ export function HierarchyStepper({ currentStep, onStepClick }: HierarchyStepperP
         </div>
     );
 }
+

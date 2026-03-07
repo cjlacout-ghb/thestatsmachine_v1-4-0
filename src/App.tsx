@@ -23,6 +23,7 @@ function App() {
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [showMigrationBanner, setShowMigrationBanner] = useState(false);
+
   // Initialize and Load data
   useEffect(() => {
     const initApp = async () => {
@@ -91,7 +92,6 @@ function App() {
       : [],
     [data.games, activeTeam, filteredTournaments]
   );
-
 
   // CRUD Handlers
   const handleSaveTeam = useCallback(async (team: Team) => {
@@ -190,8 +190,6 @@ function App() {
     }
   }, [data]);
 
-
-
   const onSaveToDisk = async () => {
     try {
       const dateStr = new Date().toISOString().split('T')[0];
@@ -242,7 +240,30 @@ function App() {
     }
   };
 
-  // Entry Point: Teams Hub
+  // Global navigation logic for HierarchyStepper
+  const currentStep: 1 | 2 = (activeTab === 'tournaments' || activeTab === 'games' || (activeTab === 'stats' && activeTournament) || activeTournament) ? 2 : 1;
+
+  const handleStepClick = useCallback((step: number) => {
+    if (step === 1) {
+      if (activeTournament) setActiveTournament(null);
+      setActiveTab('players');
+    } else if (step === 2) {
+      if (!activeTeam) {
+        if (data.teams.length > 0) {
+          setActiveTeam(data.teams[0]);
+          setActiveTab('tournaments');
+        }
+        return;
+      }
+      if (activeTournament) {
+        setActiveTab('games');
+      } else {
+        setActiveTab('tournaments');
+      }
+    }
+  }, [activeTeam, activeTournament, data.teams]);
+
+  // Entry Point: Teams Hub (Selective view)
   if (!activeTeam) {
     return (
       <div className="app">
@@ -269,9 +290,10 @@ function App() {
           onAddTeam={() => setModalType('team')}
           onEditTeam={(team) => { setEditItem(team); setModalType('team'); }}
           onDeleteTeam={(team) => handleDeleteTeam(team.id)}
-          /* onDemoData eliminado */
           onImportData={handleImportData}
           onOpenHelp={() => setModalType('help')}
+          currentStep={currentStep}
+          onStepClick={handleStepClick}
         />
         <AppModals
           modalType={modalType}
@@ -288,12 +310,13 @@ function App() {
           onDeleteGame={handleDeleteGame}
           onDeleteTeamConfirm={handleDeleteTeam}
           onBulkImportPlayers={handleBulkImportPlayers}
-          onSaveGameStats={() => { }} // Placeholder if not implemented yet
+          onSaveGameStats={() => { }}
         />
       </div>
     );
   }
 
+  // Main Dashboard view
   return (
     <div className="app">
       <AppHeader
@@ -324,10 +347,18 @@ function App() {
             setActiveTournament(null);
             setActiveTab('tournaments');
           }}
+          tournaments={filteredTournaments}
+          onSelectTournament={(t) => {
+            setActiveTournament(t);
+            setActiveTab('games');
+          }}
         />
 
         <main className="app-content">
-          <HierarchyStepper currentStep={activeTournament ? 2 : 1} />
+          <HierarchyStepper
+            currentStep={currentStep}
+            onStepClick={handleStepClick}
+          />
 
           <div className="dash-header-bar">
             <h2 className="text-bold">{activeTab.toUpperCase()}</h2>
@@ -385,7 +416,7 @@ function App() {
             onDeleteGame={handleDeleteGame}
             onDeleteTeamConfirm={handleDeleteTeam}
             onBulkImportPlayers={handleBulkImportPlayers}
-            onSaveGameStats={() => { }} // Placeholder
+            onSaveGameStats={() => { }}
           />
         </main>
       </div>

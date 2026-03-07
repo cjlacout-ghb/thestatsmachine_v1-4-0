@@ -13,10 +13,12 @@ interface TeamsHubProps {
     onDemoData?: () => void;
     onImportData: (data: AppData) => void;
     onOpenHelp: () => void;
+    currentStep?: 1 | 2;
+    onStepClick?: (step: number) => void;
 }
 
 
-export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, onEditTeam, onDeleteTeam, onDemoData, onImportData, onOpenHelp }: TeamsHubProps) {
+export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, onEditTeam, onDeleteTeam, onDemoData, onImportData, onOpenHelp, currentStep = 1, onStepClick }: TeamsHubProps) {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -73,7 +75,7 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                         </div>
 
                         <div style={{ width: '100%', maxWidth: '600px', marginBottom: 'var(--space-2xl)' }}>
-                            <HierarchyStepper currentStep={1} />
+                            <HierarchyStepper currentStep={currentStep} onStepClick={onStepClick} />
                         </div>
 
                         <div className="card text-center setup-card-primary">
@@ -122,7 +124,7 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                     <p className="hub-subtitle">Seleccioná un equipo para gestionar el plantel y seguir el rendimiento en torneos.</p>
                 </div>
 
-                <HierarchyStepper currentStep={1} />
+                <HierarchyStepper currentStep={currentStep} onStepClick={onStepClick} />
 
                 <div className="teams-grid">
                     {teams.map(team => {

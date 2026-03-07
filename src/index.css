@@ -188,6 +188,22 @@ body {
   border-radius: var(--radius-full);
 }
 
+/* Hierarchy Stepper Hover States */
+.stepper-item.interactive {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stepper-item.interactive:hover {
+  transform: scale(1.08) !important;
+  background: var(--bg-card-hover) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.stepper-item.interactive:active {
+  transform: scale(1.02) !important;
+}
+
+
 /* Main Content */
 .main-content {
   flex: 1;
