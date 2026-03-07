@@ -25,12 +25,12 @@ export function TournamentForm({ tournament, availableTeams, initialTeamId, onSa
 
     const validate = () => {
         const errs: Record<string, string> = {};
-        if (!name.trim()) errs.name = 'Name is required';
+        if (!name.trim()) errs.name = 'El nombre es obligatorio';
 
 
 
         if (startDate && endDate && startDate > endDate) {
-            errs.endDate = 'End date must be after start date';
+            errs.endDate = 'La fecha de fin debe ser posterior a la de inicio';
         }
         setErrors(errs);
         return Object.keys(errs).length === 0;
@@ -59,8 +59,8 @@ export function TournamentForm({ tournament, availableTeams, initialTeamId, onSa
     return (
         <div className="modal-content">
             <div className="modal-header">
-                <h3>{tournament ? 'Update Event Settings' : 'Initialize New Event'}</h3>
-                <p>{tournament ? 'Configure tournament details and team participants' : 'Setup a new competitive event or league season'}</p>
+                <h3>{tournament ? 'Actualizar Configuración del Evento' : 'Inicializar Nuevo Evento'}</h3>
+                <p>{tournament ? 'Configurá los detalles del torneo y equipos participantes' : 'Configurá un nuevo evento competitivo o liga'}</p>
             </div>
 
             {tournament && (
@@ -68,7 +68,7 @@ export function TournamentForm({ tournament, availableTeams, initialTeamId, onSa
                     <div className="identity-badge" style={{ borderColor: 'var(--avg)' }}>
                         <div className="identity-icon" style={{ background: 'var(--avg)' }}>🏆</div>
                         <div className="identity-info">
-                            <span className="identity-label">Editing Event</span>
+                            <span className="identity-label">Editando Evento</span>
                             <span className="identity-name">{tournament.name}</span>
                         </div>
                     </div>
@@ -76,7 +76,7 @@ export function TournamentForm({ tournament, availableTeams, initialTeamId, onSa
                         <div className="identity-badge">
                             <div className="identity-icon">🥎</div>
                             <div className="identity-info">
-                                <span className="identity-label">Primary Team</span>
+                                <span className="identity-label">Equipo Principal</span>
                                 <span className="identity-name">{editingTeam.name}</span>
                             </div>
                         </div>
@@ -87,12 +87,12 @@ export function TournamentForm({ tournament, availableTeams, initialTeamId, onSa
             <form onSubmit={handleSubmit}>
                 <div className="modal-body">
                     <div className="form-group">
-                        <label className="form-label">Event Name</label>
+                        <label className="form-label">Nombre del Evento</label>
                         <input
                             type="text"
                             value={name}
                             onChange={e => setName(e.target.value)}
-                            placeholder="e.g. Spring Championship 2026"
+                            placeholder="ej. Campeonato de Primavera 2026"
                             className={`form-control ${errors.name ? 'error' : ''}`}
                         />
                         {errors.name && <span className="form-error">{errors.name}</span>}
@@ -102,7 +102,7 @@ export function TournamentForm({ tournament, availableTeams, initialTeamId, onSa
 
                     <div className="grid-2">
                         <div className="form-group">
-                            <label className="form-label">Start Date (Optional)</label>
+                            <label className="form-label">Fecha de Inicio (Opcional)</label>
 
                             <input
                                 type="date"
@@ -121,7 +121,7 @@ export function TournamentForm({ tournament, availableTeams, initialTeamId, onSa
                         </div>
 
                         <div className="form-group">
-                            <label className="form-label">End Date (Optional)</label>
+                            <label className="form-label">Fecha de Fin (Opcional)</label>
 
                             <input
                                 type="date"
@@ -135,30 +135,30 @@ export function TournamentForm({ tournament, availableTeams, initialTeamId, onSa
 
                     <div className="grid-2">
                         <div className="form-group">
-                            <label className="form-label">Location (Optional)</label>
+                            <label className="form-label">Sede (Opcional)</label>
                             <input
                                 type="text"
                                 value={location}
                                 onChange={e => setLocation(e.target.value)}
-                                placeholder="e.g. Central Park"
+                                placeholder="ej. Parque Central"
                                 className="form-control"
                             />
                         </div>
 
                         <div className="form-group">
-                            <label className="form-label">Format (Optional)</label>
+                            <label className="form-label">Formato (Opcional)</label>
                             <input
                                 type="text"
                                 value={format}
                                 onChange={e => setFormat(e.target.value)}
-                                placeholder="e.g. Pool Play + Bracket"
+                                placeholder="ej. Fase de grupos + Llave"
                                 className="form-control"
                             />
                         </div>
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label mb-sm">Event Type (Optional)</label>
+                        <label className="form-label mb-sm">Tipo de Evento (Opcional)</label>
 
                         <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
                             {['tournament', 'league', 'friendly'].map(t => (
@@ -178,10 +178,10 @@ export function TournamentForm({ tournament, availableTeams, initialTeamId, onSa
 
                 <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" onClick={onCancel} style={{ flex: 1 }}>
-                        Discard
+                        Descartar
                     </button>
                     <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>
-                        {tournament ? 'Save Changes' : 'Create Event'}
+                        {tournament ? 'Guardar Cambios' : 'Crear Evento'}
                     </button>
                 </div>
             </form>

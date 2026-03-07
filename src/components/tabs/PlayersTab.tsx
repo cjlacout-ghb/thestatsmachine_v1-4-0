@@ -45,11 +45,11 @@ export function PlayersTab({ players, games, onSelectPlayer, onAddPlayer, highli
             {players.length === 0 ? (
                 <EmptyState
                     icon="👥"
-                    title="No Players Yet"
-                    message="Add players to your roster to start tracking stats."
+                    title="Aún no hay jugadores"
+                    message="Agrega jugadores al plantel para comenzar a seguir sus stats."
                     action={
                         <button className="btn btn-new" onClick={onAddPlayer}>
-                            + Add Player
+                            + Agregar Jugador
                         </button>
                     }
                 />
@@ -98,20 +98,20 @@ export function PlayersTab({ players, games, onSelectPlayer, onAddPlayer, highli
                             }}
                         >
                             <div className="player-avatar" style={{ background: 'var(--bg-card)', color: 'var(--accent-primary)', fontSize: '1.5rem' }}>+</div>
-                            <h3 className="text-bold" style={{ color: 'var(--accent-primary)' }}>Add Player</h3>
+                            <h3 className="text-bold" style={{ color: 'var(--accent-primary)' }}>Agregar Jugador</h3>
                         </div>
                     </div>
 
                     {/* Statistics Table */}
                     <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                         <div className="card-header" style={{ padding: 'var(--space-lg) var(--space-xl)', marginBottom: 0 }}>
-                            <h3 className="card-title">Full Team Statistics</h3>
+                            <h3 className="card-title">Estadísticas Completas del Equipo</h3>
                         </div>
                         <div style={{ overflowX: 'auto' }}>
                             <table className="stat-table">
                                 <thead>
                                     <tr>
-                                        <th style={{ paddingLeft: 'var(--space-xl)' }}>Player</th>
+                                        <th style={{ paddingLeft: 'var(--space-xl)' }}>Jugador</th>
                                         <th>Pos</th>
                                         <th>G</th>
                                         <th>AB</th>
@@ -119,7 +119,7 @@ export function PlayersTab({ players, games, onSelectPlayer, onAddPlayer, highli
                                         <th>OBP</th>
                                         <th>SLG</th>
                                         <th>OPS</th>
-                                        <th className="text-right" style={{ paddingRight: 'var(--space-xl)' }}>Actions</th>
+                                        <th className="text-right" style={{ paddingRight: 'var(--space-xl)' }}>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -148,10 +148,10 @@ export function PlayersTab({ players, games, onSelectPlayer, onAddPlayer, highli
                             </table>
                         </div>
                         <div className="modal-footer" style={{ borderTop: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-md) var(--space-xl)' }}>
-                            <span className="text-muted" style={{ fontSize: '0.75rem' }}>Showing {players.length} players from roster</span>
+                            <span className="text-muted" style={{ fontSize: '0.75rem' }}>Mostrando {players.length} jugadores del plantel</span>
                             <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
-                                <button className="btn btn-secondary" style={{ padding: '4px 12px', fontSize: '0.75rem' }}>Prev</button>
-                                <button className="btn btn-secondary" style={{ padding: '4px 12px', fontSize: '0.75rem' }}>Next</button>
+                                <button className="btn btn-secondary" style={{ padding: '4px 12px', fontSize: '0.75rem' }}>Ant.</button>
+                                <button className="btn btn-secondary" style={{ padding: '4px 12px', fontSize: '0.75rem' }}>Sig.</button>
                             </div>
                         </div>
                     </div>

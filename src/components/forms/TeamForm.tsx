@@ -15,7 +15,7 @@ export function TeamForm({ team, onSave, onCancel }: TeamFormProps) {
 
     const validate = () => {
         const errs: Record<string, string> = {};
-        if (!name.trim()) errs.name = 'Team name is required';
+        if (!name.trim()) errs.name = 'El nombre del equipo es obligatorio';
         setErrors(errs);
         return Object.keys(errs).length === 0;
     };
@@ -34,8 +34,8 @@ export function TeamForm({ team, onSave, onCancel }: TeamFormProps) {
     return (
         <div className="modal-content">
             <div className="modal-header">
-                <h3>{team ? 'Update Organization' : 'Register New Team'}</h3>
-                <p>{team ? 'Modify your squad and institutional details' : 'Create a new team silo for your stats tracking'}</p>
+                <h3>{team ? 'Actualizar Organización' : 'Registrar Nuevo Equipo'}</h3>
+                <p>{team ? 'Modificá los datos de tu equipo e institución' : 'Creá un nuevo equipo para seguimiento de stats'}</p>
             </div>
 
             {team && (
@@ -43,7 +43,7 @@ export function TeamForm({ team, onSave, onCancel }: TeamFormProps) {
                     <div className="identity-badge">
                         <div className="identity-icon">🥎</div>
                         <div className="identity-info">
-                            <span className="identity-label">Editing Team Profile</span>
+                            <span className="identity-label">Editando Perfil del Equipo</span>
                             <span className="identity-name">{team.name}</span>
                         </div>
                     </div>
@@ -53,23 +53,23 @@ export function TeamForm({ team, onSave, onCancel }: TeamFormProps) {
             <form onSubmit={handleSubmit}>
                 <div className="modal-body">
                     <div className="form-group">
-                        <label className="form-label">Team Name</label>
+                        <label className="form-label">Nombre del Equipo</label>
                         <input
                             type="text"
                             value={name}
                             onChange={e => setName(e.target.value)}
-                            placeholder="e.g. Red Dragons Softball"
+                            placeholder="ej. Dragones Rojos Softball"
                             className={`form-control ${errors.name ? 'error' : ''}`}
                         />
                         {errors.name && <span className="form-error">{errors.name}</span>}
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Description (Optional)</label>
+                        <label className="form-label">Descripción (Opcional)</label>
                         <textarea
                             value={description}
                             onChange={e => setDescription(e.target.value)}
-                            placeholder="e.g. Competitive travel team based in Southern California"
+                            placeholder="ej. Equipo competitivo de viaje con sede en el sur"
                             className="form-control"
                             rows={3}
                             style={{ resize: 'none' }}
@@ -79,10 +79,10 @@ export function TeamForm({ team, onSave, onCancel }: TeamFormProps) {
 
                 <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" onClick={onCancel} style={{ flex: 1 }}>
-                        Discard
+                        Descartar
                     </button>
                     <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>
-                        {team ? 'Save Changes' : 'Register Team'}
+                        {team ? 'Guardar Cambios' : 'Registrar Equipo'}
                     </button>
                 </div>
             </form>

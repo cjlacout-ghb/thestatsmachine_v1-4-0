@@ -34,11 +34,11 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                 if (e.target) e.target.value = '';
             } catch (err) {
                 console.error('Import error:', err);
-                alert('Invalid JSON file format.');
+                alert('Formato de archivo JSON inválido.');
             }
         };
         reader.onerror = () => {
-            alert('Error reading file.');
+            alert('Error al leer el archivo.');
         };
         reader.readAsText(file);
     };
@@ -59,7 +59,7 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                         onClick={onOpenHelp}
                         style={{ fontWeight: '700', marginLeft: 'auto' }}
                     >
-                        📖 Help
+                        📖 Ayuda
                     </button>
                 </header>
                 <div className="hub-zero-state">
@@ -68,7 +68,7 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                             <div style={{ fontSize: '5rem', marginBottom: 'var(--space-lg)' }}>🥎</div>
                             <h1 className="hero-title hero-title-primary">The Stats Machine</h1>
                             <p className="hero-subtitle hero-subtitle-primary">
-                                Professional Analytics & Performance Tracking
+                                Análisis Profesional de Rendimiento
                             </p>
                         </div>
 
@@ -77,19 +77,19 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                         </div>
 
                         <div className="card text-center setup-card-primary">
-                            <h2 className="setup-card-title">Get Started</h2>
+                            <h2 className="setup-card-title">Comenzar</h2>
                             <p className="setup-card-text">
-                                Create your first team organization or import your existing data to begin.
+                                Creá tu primera organización de equipo o importá tus datos existentes para comenzar.
                             </p>
                             <div style={{ display: 'flex', gap: 'var(--space-md)', justifyContent: 'center' }}>
                                 <button
                                     className="btn btn-hero-primary"
                                     onClick={onAddTeam}
                                 >
-                                    + Add Team
+                                    + Agregar Equipo
                                 </button>
                                 <label className="btn btn-hero-secondary" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    📥 Import Data
+                                    📥 Importar Datos
                                     <input
                                         type="file"
                                         accept=".json"
@@ -105,7 +105,7 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                                 onClick={onDemoData}
                                 className="link-demo-data"
                             >
-                                or view demo data
+                                or ver datos demo
                             </button>
                         )}
                     </main>
@@ -118,8 +118,8 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
         <div className="app-hub">
             <main className="hub-content">
                 <div className="hub-intro">
-                    <h2 className="hub-title">My Teams</h2>
-                    <p className="hub-subtitle">Select a team to manage rosters and track tournament performance.</p>
+                    <h2 className="hub-title">Mis Equipos</h2>
+                    <p className="hub-subtitle">Seleccioná un equipo para gestionar el plantel y seguir el rendimiento en torneos.</p>
                 </div>
 
                 <HierarchyStepper currentStep={1} />
@@ -136,7 +136,7 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                                 <div
                                     onClick={() => onSelectTeam(team)}
                                     style={{ position: 'absolute', inset: 0, zIndex: 1, cursor: 'pointer' }}
-                                    title={`Select ${team.name}`}
+                                    title={`Seleccionar ${team.name}`}
                                 />
 
                                 {/* Sección principal del card — estructura correcta */}
@@ -144,10 +144,10 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                                     <div className="team-card-icon">🥎</div>
                                     <div className="team-card-details">
                                         <h3 className="team-name">{team.name}</h3>
-                                        <p className="team-desc">{team.description || 'No description provided.'}</p>
+                                        <p className="team-desc">{team.description || 'Sin descripción.'}</p>
                                         <div className="team-meta">
-                                            <span className="meta-badge">{teamTournaments.length} Tournaments</span>
-                                            <span className="meta-badge">{teamGames.length} Games</span>
+                                            <span className="meta-badge">{teamTournaments.length} Eventos</span>
+                                            <span className="meta-badge">{teamGames.length} Partidos</span>
                                         </div>
                                     </div>
                                 </div>
@@ -159,17 +159,17 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                                             type="button"
                                             className="btn btn-ghost btn-sm"
                                             onClick={(e) => { e.stopPropagation(); onEditTeam?.(team); }}
-                                            title="Edit Team"
+                                            title="Editar Equipo"
                                         >
-                                            ⚙️ Edit
+                                            ⚙️ Editar
                                         </button>
                                         <button
                                             type="button"
                                             className="btn btn-ghost btn-sm text-danger"
                                             onClick={(e) => { e.stopPropagation(); onDeleteTeam?.(team); }}
-                                            title="Delete Team"
+                                            title="Eliminar Equipo"
                                         >
-                                            🗑 Delete
+                                            🗑 Eliminar
                                         </button>
                                     </div>
 
@@ -184,8 +184,8 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                         <div className="team-card-content">
                             <div className="team-card-icon">+</div>
                             <div className="team-card-info">
-                                <h3 className="team-name">Add Team</h3>
-                                <p className="team-desc">Register another squad or organization.</p>
+                                <h3 className="team-name">Agregar Equipo</h3>
+                                <p className="team-desc">Registrá otro equipo u organización.</p>
                             </div>
                         </div>
                     </div>

@@ -58,7 +58,7 @@ export function GlobalSearch({ players, games, onSelectPlayer, onSelectGame }: G
                     ref={searchInputRef}
                     type="text"
                     className="form-control"
-                    placeholder="Search players or games..."
+                    placeholder="Buscar jugadores o partidos..."
                     value={query}
                     onChange={e => { setQuery(e.target.value); setIsOpen(true); }}
                     onFocus={() => setIsOpen(true)}
@@ -100,7 +100,7 @@ export function GlobalSearch({ players, games, onSelectPlayer, onSelectGame }: G
                 }}>
                     {!hasResults && (
                         <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                            No results found.
+                            No se encontraron resultados.
                         </div>
                     )}
 
@@ -114,7 +114,7 @@ export function GlobalSearch({ players, games, onSelectPlayer, onSelectGame }: G
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.05em'
                             }}>
-                                Players
+                                Jugadores
                             </div>
                             {filteredPlayers.slice(0, 5).map(p => (
                                 <button
@@ -168,7 +168,7 @@ export function GlobalSearch({ players, games, onSelectPlayer, onSelectGame }: G
                                 letterSpacing: '0.05em',
                                 marginTop: filteredPlayers.length > 0 ? '8px' : '0'
                             }}>
-                                Games
+                                Partidos
                             </div>
                             {filteredGames.slice(0, 5).map(g => (
                                 <button

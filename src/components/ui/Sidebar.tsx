@@ -17,44 +17,58 @@ export function Sidebar({ activeTab, setActiveTab, activeTeam, activeTournament,
         <aside className="app-sidebar">
             {/* TEAM SECTION */}
             <div className="sidebar-group">
-                <h3 className="sidebar-header">TEAM</h3>
+                <h3 className="sidebar-header">EQUIPO</h3>
                 <nav className="sidebar-nav">
                     <button
                         className={`sidebar-item ${activeTab === 'team' && !activeTournament ? 'active' : ''}`}
                         onClick={() => { onExitTournament(); setActiveTab('team'); }}
                     >
                         <span className="icon">🏢</span>
-                        <span>Overview</span>
+                        <span>Resumen</span>
                     </button>
                     <button
                         className={`sidebar-item ${activeTab === 'players' && !activeTournament ? 'active' : ''}`}
                         onClick={() => { onExitTournament(); setActiveTab('players'); }}
                     >
                         <span className="icon">👥</span>
-                        <span>Roster</span>
+                        <span>Plantel</span>
                     </button>
                     <button
                         className={`sidebar-item ${activeTab === 'stats' && !activeTournament ? 'active' : ''}`}
                         onClick={() => { onExitTournament(); setActiveTab('stats'); }}
                     >
                         <span className="icon">📊</span>
-                        <span>Season Stats</span>
+                        <span>Stats de Temporada</span>
                     </button>
                 </nav>
             </div>
 
             <div className="sidebar-divider"></div>
 
+            {/* PROMINENT ENTRY POINT */}
+            <div className="sidebar-group" style={{ marginBottom: 'var(--space-md)' }}>
+                <h3 className="sidebar-header" style={{
+                    color: 'var(--accent-primary)',
+                    fontSize: '0.9rem',
+                    fontWeight: '900',
+                    borderLeft: '4px solid var(--accent-primary)',
+                    paddingLeft: '8px',
+                    marginBottom: '0'
+                }}>
+                    ZONA DE CARGA
+                </h3>
+            </div>
+
             {/* EVENTS SECTION */}
             <div className="sidebar-group">
-                <h3 className="sidebar-header">EVENTS</h3>
+                <h3 className="sidebar-header">EVENTOS</h3>
                 <nav className="sidebar-nav">
                     <button
                         className={`sidebar-item ${activeTab === 'tournaments' && !activeTournament ? 'active' : ''}`}
                         onClick={() => { onExitTournament(); setActiveTab('tournaments'); }}
                     >
                         <span className="icon">🏆</span>
-                        <span>All Events</span>
+                        <span>Todos los Eventos</span>
                     </button>
 
                     {tournaments.map(t => (
@@ -82,7 +96,7 @@ export function Sidebar({ activeTab, setActiveTab, activeTeam, activeTournament,
                 {/* ACTIVE EVENT SUB-SECTION */}
                 {activeTournament && (
                     <div className="active-event-card mt-md">
-                        <div className="event-name-label">ACTIVE EVENT</div>
+                        <div className="event-name-label">EVENTO ACTIVO</div>
                         <div className="event-name">{activeTournament.name}</div>
                         <nav className="sidebar-nav mt-sm">
                             <button
@@ -90,7 +104,7 @@ export function Sidebar({ activeTab, setActiveTab, activeTeam, activeTournament,
                                 onClick={() => setActiveTab('games')}
                             >
                                 <span className="icon">📅</span>
-                                <span>Game Log</span>
+                                <span>Registro de Partidos</span>
                             </button>
                             <button
                                 className={`sidebar-item ${activeTab === 'stats' ? 'active' : ''}`}
@@ -101,7 +115,7 @@ export function Sidebar({ activeTab, setActiveTab, activeTeam, activeTournament,
                             </button>
                         </nav>
                         <button className="btn-link-sm mt-md text-danger" onClick={onExitTournament}>
-                            × Exit Event
+                            × Salir del Evento
                         </button>
                     </div>
                 )}

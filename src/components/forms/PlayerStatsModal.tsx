@@ -63,7 +63,7 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
         const rows = importText.trim().split('\n').map(row => row.split(delimiter).map(cell => cell.trim().replace(/^"|"$/g, '')));
 
         if (rows.length < 2) {
-            setImportWarning("Not enough data. Please include headers and at least one row.");
+            setImportWarning("Datos insuficientes. Por favor incluye encabezados y al menos una fila.");
             return;
         }
 
@@ -102,7 +102,7 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
         setImportText('');
 
         if (missingPlayers.length > 0) {
-            alert(`⚠️ Players not found in roster and skipped:\n${missingPlayers.join(", ")}`);
+            alert(`⚠️ Jugadores no encontrados en el plantel y omitidos:\n${missingPlayers.join(", ")}`);
         }
     };
 
@@ -127,7 +127,7 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
         <div className="card" style={{ width: '90vw', maxWidth: '800px' }}>
             <div className="modal-header">
                 <div>
-                    <h2 style={{ margin: 0 }}>Player Stats</h2>
+                    <h2 style={{ margin: 0 }}>Stats Jugadores</h2>
                     <p className="text-muted" style={{ margin: 0, fontSize: '0.85rem' }}>
                         {gameTitle} · {gameDate}
                     </p>
@@ -147,14 +147,14 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
                         style={{ flex: 1, fontWeight: 'bold' }}
                         onClick={() => setActiveTab('manual')}
                     >
-                        📝 Manual Entry
+                        📝 Ingreso Manual
                     </button>
                     <button
                         className={`btn ${activeTab === 'bulk' ? 'btn-primary' : 'btn-ghost'}`}
                         style={{ flex: 1, fontWeight: 'bold' }}
                         onClick={() => setActiveTab('bulk')}
                     >
-                        📋 Bulk Import
+                        📋 Importación Masiva
                     </button>
                 </div>
 
@@ -164,7 +164,7 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
                             <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse' }}>
                                 <thead>
                                     <tr style={{ borderBottom: '2px solid var(--border-light)', textAlign: 'center' }}>
-                                        <th style={{ textAlign: 'left', padding: '8px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Player Name</th>
+                                        <th style={{ textAlign: 'left', padding: '8px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Nombre del Jugador</th>
                                         <th style={{ padding: '8px', color: 'var(--text-muted)', fontSize: '0.8rem' }} title="At Bats">AB</th>
                                         <th style={{ padding: '8px', color: 'var(--text-muted)', fontSize: '0.8rem' }} title="Hits">H</th>
                                         <th style={{ padding: '8px', color: 'var(--text-muted)', fontSize: '0.8rem' }} title="Runs">R</th>
@@ -221,7 +221,7 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
                             <div className="card dashed-border flex-center" style={{ padding: 'var(--space-xl)', background: 'var(--bg-subtle)' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-sm)' }}>
                                     <div style={{ fontSize: '2rem' }}>📁</div>
-                                    <h3 style={{ margin: 0 }}>Upload a .csv or .txt file</h3>
+                                    <h3 style={{ margin: 0 }}>Subir un archivo .csv o .txt</h3>
                                     <label
                                         className="btn"
                                         style={{
@@ -237,7 +237,7 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
                                             transition: 'all 0.2s ease'
                                         }}
                                     >
-                                        Choose File
+                                        Elegir Archivo
                                         <input
                                             type="file"
                                             accept=".csv,.txt"
@@ -259,14 +259,14 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
                                     marginBottom: 'var(--space-xs)'
                                 }}>
                                     <p style={{ margin: '0 0 var(--space-xs) 0', fontWeight: '600', color: 'var(--text-primary)' }}>
-                                        Format Example (selectable):
+                                        Ejemplo de Formato (seleccionable):
                                     </p>
                                     <pre style={{ margin: 0, fontFamily: 'monospace', userSelect: 'all', whiteSpace: 'pre-wrap', cursor: 'text' }}>
                                         Player Name, AB, H, R, RBI, K, BB, E
                                         Jane Doe, 3, 2, 1, 0, 1, 0, 0
                                         John Smith, 4, 1, 0, 0, 2, 1, 0</pre>
                                 </div>
-                                <h4 style={{ margin: 0 }}>Or paste your data here</h4>
+                                <h4 style={{ margin: 0 }}>O pegá tus datos aquí</h4>
 
                                 {importWarning && (
                                     <div style={{ padding: 'var(--space-sm)', background: 'var(--under-bg)', color: 'var(--under)', borderRadius: 'var(--radius-sm)', marginBottom: 'var(--space-sm)', fontSize: '0.85rem' }}>
@@ -276,7 +276,7 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
                                 <textarea
                                     className="form-input"
                                     style={{ width: '100%', minHeight: '150px', fontFamily: 'monospace', whiteSpace: 'pre' }}
-                                    placeholder="Paste your CSV or tab-separated data here..."
+                                    placeholder="Pegá tus datos CSV o separados por tab aquí..."
                                     value={importText}
                                     onChange={(e) => setImportText(e.target.value)}
                                 />
@@ -287,14 +287,14 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
             </div>
 
             <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
+                <button className="btn btn-ghost" onClick={onCancel}>Cancelar</button>
                 {activeTab === 'manual' ? (
                     <button
                         className="btn btn-primary"
                         onClick={handleSave}
                         disabled={isSaving}
                     >
-                        {isSaving ? 'Stats saved ✅' : 'Save Stats'}
+                        {isSaving ? 'Stats guardados ✅' : 'Guardar Stats'}
                     </button>
                 ) : (
                     <button
@@ -302,7 +302,7 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
                         onClick={handleParseBulk}
                         disabled={!importText.trim()}
                     >
-                        Parse & Preview
+                        Parsear & Vista Previa
                     </button>
                 )}
             </div>

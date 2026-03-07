@@ -32,14 +32,14 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
 
     const validate = () => {
         const errs: Record<string, string> = {};
-        if (!opponent.trim()) errs.opponent = 'Opponent is required';
-        if (!date) errs.date = 'Date is required';
-        if (teamInnings <= 0) errs.teamInnings = 'Team innings played must be greater than 0';
-        if (opponentInnings <= 0) errs.opponentInnings = 'Opponent innings played must be greater than 0';
+        if (!opponent.trim()) errs.opponent = 'El rival es obligatorio';
+        if (!date) errs.date = 'La fecha es obligatoria';
+        if (teamInnings <= 0) errs.teamInnings = 'Los innings del equipo deben ser mayores a 0';
+        if (opponentInnings <= 0) errs.opponentInnings = 'Los innings del rival deben ser mayores a 0';
 
         const invalidPlayers = playerStats.filter(p => p.h > p.ab).map(p => players.find(pl => pl.id === p.playerId)?.name || 'Unknown Player');
         if (invalidPlayers.length > 0) {
-            errs.playerStats = `Hits cannot exceed At-Bats for: ${invalidPlayers.join(', ')}`;
+            errs.playerStats = `Los hits no pueden superar los turnos al bate para: ${invalidPlayers.join(', ')}`;
         }
 
         setErrors(errs);
@@ -98,7 +98,7 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
             <div className="modal-header">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <div>
-                        <h3>{game ? 'Edit' : 'Add New'} Game</h3>
+                        <h3>{game ? 'Editar' : 'Agregar Nuevo'} Partido</h3>
                         <p style={{ fontSize: '0.875rem', opacity: 0.8 }}>
                             {formatLocalDate(date)} • {homeAway === 'home' ? `${opponent || 'Opponent'} @ ${teamName}` : `${teamName} @ ${opponent || 'Opponent'}`}
                         </p>
@@ -109,12 +109,12 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
                                 className={`btn btn-sm ${activeSubTab === 'details' ? 'btn-primary' : 'btn-ghost'}`}
                                 onClick={() => setActiveSubTab('details')}
                                 style={{ borderRadius: 'var(--radius-sm)' }}
-                            >Details</button>
+                            >Detalles</button>
                             <button
                                 className={`btn btn-sm ${activeSubTab === 'stats' ? 'btn-primary' : 'btn-ghost'}`}
                                 onClick={() => setActiveSubTab('stats')}
                                 style={{ borderRadius: 'var(--radius-sm)' }}
-                            >Player Stats</button>
+                            >Stats Jugadores</button>
                         </div>
                     )}
                 </div>
@@ -126,49 +126,49 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
                         {/* Meta Data Section */}
                         <div className="form-group mb-lg">
                             <h4 className="form-label mb-md" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ color: 'var(--accent-primary)' }}>ℹ</span> Game Details
+                                <span style={{ color: 'var(--accent-primary)' }}>ℹ</span> Detalles del Partido
                             </h4>
                             <div className="grid-2">
                                 <div className="form-group">
-                                    <label className="form-label">Game Date</label>
+                                    <label className="form-label">Fecha del Partido</label>
                                     <input type="date" className="form-control" value={date} onChange={e => setDate(e.target.value)} />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Opponent</label>
-                                    <input type="text" className="form-control" placeholder="Enter Opponent Name" value={opponent} onChange={e => setOpponent(e.target.value)} />
+                                    <label className="form-label">Rival</label>
+                                    <input type="text" className="form-control" placeholder="Nombre del Rival" value={opponent} onChange={e => setOpponent(e.target.value)} />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Game Type</label>
+                                    <label className="form-label">Tipo de Partido</label>
                                     <select
                                         className="form-control"
                                         value={gameType}
                                         onChange={e => setGameType(e.target.value as Game['gameType'])}
                                     >
-                                        <option value="regular">Regular Season</option>
+                                        <option value="regular">Temporada Regular</option>
                                         <option value="playoff">Playoff</option>
                                         <option value="tournament">Tournament</option>
                                         <option value="friendly">Friendly</option>
                                     </select>
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Home / Away</label>
+                                    <label className="form-label">Local / Visitante</label>
                                     <div style={{ display: 'flex', background: 'var(--bg-primary)', padding: '4px', borderRadius: 'var(--radius-md)' }}>
                                         <button
                                             className="btn"
                                             style={{ flex: 1, background: homeAway === 'home' ? 'white' : 'transparent', boxShadow: homeAway === 'home' ? 'var(--shadow-sm)' : 'none', color: homeAway === 'home' ? 'var(--accent-primary)' : 'var(--text-muted)', padding: '8px' }}
                                             onClick={() => setHomeAway('home')}
-                                        >Home</button>
+                                        >Local</button>
                                         <button
                                             className="btn"
                                             style={{ flex: 1, background: homeAway === 'away' ? 'white' : 'transparent', boxShadow: homeAway === 'away' ? 'var(--shadow-sm)' : 'none', color: homeAway === 'away' ? 'var(--accent-primary)' : 'var(--text-muted)', padding: '8px' }}
                                             onClick={() => setHomeAway('away')}
-                                        >Away</button>
+                                        >Visitante</button>
                                     </div>
                                 </div>
                             </div>
                             {Object.keys(errors).length > 0 && (
                                 <div className="mt-md form-error">
-                                    ⚠️ Please fix the following: {Object.values(errors).join(', ')}
+                                    ⚠️ Por favor corregí lo siguiente: {Object.values(errors).join(', ')}
                                 </div>
                             )}
                         </div>
@@ -178,7 +178,7 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
                         {/* Score Section */}
                         <div className="form-group">
                             <h4 className="form-label mb-md" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ color: 'var(--accent-primary)' }}>📊</span> Final Score
+                                <span style={{ color: 'var(--accent-primary)' }}>📊</span> Marcador Final
                             </h4>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)' }}>
                                 {/* AWAY TEAM (LEFT) */}
@@ -508,11 +508,11 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
             <div className="modal-footer">
                 {game && onDelete && (
                     <button className="btn btn-danger" onClick={onDelete} style={{ marginRight: 'auto' }}>
-                        🗑 Delete
+                        🗑 Eliminar
                     </button>
                 )}
-                <button className="btn btn-secondary" onClick={onCancel}>Cancel</button>
-                <button className="btn btn-primary" onClick={handleSubmit}>Save Game Changes</button>
+                <button className="btn btn-secondary" onClick={onCancel}>Cancelar</button>
+                <button className="btn btn-primary" onClick={handleSubmit}>Guardar Cambios del Partido</button>
             </div>
         </div>
     );

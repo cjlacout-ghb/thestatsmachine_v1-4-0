@@ -5,8 +5,8 @@ interface HierarchyStepperProps {
 
 export function HierarchyStepper({ currentStep, onStepClick }: HierarchyStepperProps) {
     const steps = [
-        { id: 1, label: 'Organization', sublabel: 'TEAMS & PLAYERS', icon: '🏢' },
-        { id: 2, label: 'Events', sublabel: 'TOURNAMENTS & GAMES', icon: '🏆' },
+        { id: 1, label: 'Organización', sublabel: 'EQUIPOS & JUGADORES', icon: '🏢' },
+        { id: 2, label: 'Eventos', sublabel: 'TORNEOS & PARTIDOS', icon: '🏆' },
     ];
 
     return (

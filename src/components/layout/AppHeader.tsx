@@ -1,17 +1,10 @@
 import { useState, useCallback } from 'react';
-import { GlobalSearch } from '../ui/GlobalSearch';
-import type { Team, Tournament, Player, Game, AppData } from '../../types';
+import type { Team } from '../../types';
 
 interface AppHeaderProps {
     activeTeam: Team | null;
     saveStatus: 'saved' | 'saving' | 'unsaved';
     lastSaveTime: Date | null;
-    data: AppData;
-    filteredPlayers: Player[];
-    searchGames: Game[];
-    onNavigateSearch: (
-        target: { type: 'player', item: Player } | { type: 'game', item: Game, tournament: Tournament }
-    ) => void;
     onOpenHelp: () => void;
     onSwitchTeam: () => void;
     onSaveToDisk: () => Promise<boolean>;
@@ -24,10 +17,6 @@ export function AppHeader({
     activeTeam,
     saveStatus,
     lastSaveTime,
-    data,
-    filteredPlayers,
-    searchGames,
-    onNavigateSearch,
     onOpenHelp,
     onSwitchTeam,
     onSaveToDisk,
@@ -53,24 +42,11 @@ export function AppHeader({
                     <div className="logo-icon header-logo-icon">🥎</div>
                     <div className="logo-text">
                         <h1>The Stats Machine</h1>
-                        <span>{activeTeam ? activeTeam.name : 'Organization Hub'} • v1.4.0</span>
+                        <span>{activeTeam ? activeTeam.name : 'Panel Principal'} • v1.4.0</span>
                     </div>
                 </div>
 
-                {/* Global Search (only inside a team) */}
-                <nav className="tab-nav">
-                    {activeTeam && (
-                        <GlobalSearch
-                            players={filteredPlayers}
-                            games={searchGames}
-                            onSelectPlayer={(p) => onNavigateSearch({ type: 'player', item: p })}
-                            onSelectGame={(g) => {
-                                const t = data.tournaments.find(tour => tour.id === g.tournamentId);
-                                if (t) onNavigateSearch({ type: 'game', item: g, tournament: t });
-                            }}
-                        />
-                    )}
-                </nav>
+
 
                 {/* Right-side action cluster */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
@@ -90,7 +66,7 @@ export function AppHeader({
                             border: '1px solid var(--border-light)',
                             whiteSpace: 'nowrap'
                         }}
-                        title={lastSaveTime ? `Last auto-save: ${lastSaveTime.toLocaleTimeString()}` : 'Ready'}
+                        title={lastSaveTime ? `Último guardado: ${lastSaveTime.toLocaleTimeString()}` : 'Listo'}
                     >
                         <div style={{
                             width: '8px',
@@ -106,12 +82,12 @@ export function AppHeader({
                         }} />
                         <span style={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                             {saveStatus === 'saving'
-                                ? 'Syncing...'
+                                ? 'Sincronizando...'
                                 : hasUnsavedChanges
-                                    ? <span style={{ color: 'var(--danger-color)' }}>⚠️ Unsaved Data</span>
+                                    ? <span style={{ color: 'var(--danger-color)' }}>⚠️ Datos sin guardar</span>
                                     : lastSaveTime
-                                        ? `Saved ${lastSaveTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                                        : 'Ready'}
+                                        ? `Guardado ${lastSaveTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                                        : 'Listo'}
                         </span>
                     </div>
 
@@ -121,7 +97,7 @@ export function AppHeader({
                     {/* 💾 Save to Disk */}
                     <button
                         onClick={handleSaveToDisk}
-                        title="Save a backup copy to your computer (Save As dialog)"
+                        title="Guardar una copia de respaldo en tu computadora (cuadro de diálogo Guardar como)"
                         style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -142,13 +118,13 @@ export function AppHeader({
                             whiteSpace: 'nowrap'
                         }}
                     >
-                        {diskSaveConfirmed ? '✅ Saved!' : '💾 Save'}
+                        {diskSaveConfirmed ? '✅ ¡Guardado!' : '💾 Guardar'}
                     </button>
 
                     {/* 📥 Load from Disk */}
                     <button
                         onClick={onLoadFromDisk}
-                        title="Restore a previously saved backup file"
+                        title="Restaurar un archivo de respaldo guardado previamente"
                         style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -166,7 +142,7 @@ export function AppHeader({
                             whiteSpace: 'nowrap'
                         }}
                     >
-                        📥 Import Data
+                        📥 Importar Datos
                     </button>
 
                     {/* Divider */}
@@ -179,7 +155,7 @@ export function AppHeader({
                             onClick={onSwitchTeam}
                             style={{ fontWeight: 700, whiteSpace: 'nowrap' }}
                         >
-                            🔄 Switch Team
+                            🔄 Cambiar Equipo
                         </button>
                     )}
 
@@ -188,15 +164,15 @@ export function AppHeader({
                         className="btn btn-ghost btn-sm"
                         onClick={onOpenHelp}
                         style={{ fontWeight: 700 }}
-                        title="Help & Documentation"
+                        title="Ayuda y Documentación"
                     >
-                        📖 Help
+                        📖 Ayuda
                     </button>
 
                     {/* ⚠️ Erase — danger icon, intentionally understated */}
                     <button
                         onClick={onOpenErase}
-                        title="Erase all data (danger zone)"
+                        title="Borrar todos los datos (zona de peligro)"
                         style={{
                             display: 'flex',
                             alignItems: 'center',

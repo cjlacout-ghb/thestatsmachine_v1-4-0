@@ -132,9 +132,9 @@ function EraseDataModal({ onClose }: { onClose: () => void }) {
                 background: 'linear-gradient(135deg, #b91c1c, #991b1b)',
                 borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0'
             }}>
-                <h3 style={{ color: 'white', margin: 0 }}>⚠️ Erase All Data</h3>
+                <h3 style={{ color: 'white', margin: 0 }}>⚠️ Borrar Todos los Datos</h3>
                 <p style={{ color: 'rgba(255,255,255,0.8)', margin: '4px 0 0 0', fontSize: '0.875rem' }}>
-                    This action is permanent and cannot be undone.
+                    Esta acción es permanente y no se puede deshacer.
                 </p>
             </div>
 
@@ -148,13 +148,13 @@ function EraseDataModal({ onClose }: { onClose: () => void }) {
                     lineHeight: '1.6'
                 }}>
                     <p style={{ margin: '0 0 8px 0', fontWeight: 600, color: 'var(--danger-color)' }}>
-                        You are about to permanently erase:
+                        Estás a punto de eliminar permanentemente:
                     </p>
                     <ul style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--text-primary)' }}>
-                        <li>All Teams</li>
-                        <li>All Players</li>
-                        <li>All Tournaments</li>
-                        <li>All Game Records &amp; Stats</li>
+                        <li>Todos los Equipos</li>
+                        <li>Todos los Jugadores</li>
+                        <li>Todos los Eventos</li>
+                        <li>Todos los Registros y Estadísticas</li>
                     </ul>
                 </div>
 
@@ -166,14 +166,14 @@ function EraseDataModal({ onClose }: { onClose: () => void }) {
                         marginBottom: 'var(--space-xs)',
                         color: 'var(--text-secondary)'
                     }}>
-                        Type <strong style={{ color: 'var(--danger-color)', letterSpacing: '0.05em' }}>RESET</strong> to enable the erase button:
+                        Escribí <strong style={{ color: 'var(--danger-color)', letterSpacing: '0.05em' }}>RESET</strong> para habilitar el botón de borrado:
                     </label>
                     <input
                         type="text"
                         className="form-control"
                         value={validationText}
                         onChange={e => setValidationText(e.target.value)}
-                        placeholder="Type RESET here"
+                        placeholder="Escribí RESET aquí"
                         autoFocus
                         style={{ border: `2px solid ${canErase ? 'var(--danger-color)' : 'var(--border-light)'}` }}
                     />
@@ -186,7 +186,7 @@ function EraseDataModal({ onClose }: { onClose: () => void }) {
                     style={{ flex: 1 }}
                     onClick={onClose}
                 >
-                    Cancel
+                    Cancelar
                 </button>
                 <button
                     className="btn"
@@ -203,7 +203,7 @@ function EraseDataModal({ onClose }: { onClose: () => void }) {
                     disabled={!canErase}
                     onClick={async () => { if (canErase) await resetDatabase(); }}
                 >
-                    Erase All Data
+                    Borrar Todos los Datos
                 </button>
             </div>
         </div>
@@ -286,7 +286,7 @@ const helpContentES = {
 };
 
 function HelpModal({ onClose }: { onClose: () => void }) {
-    const [lang, setLang] = useState<'en' | 'es'>('en');
+    const [lang, setLang] = useState<'en' | 'es'>('es');
     const content = lang === 'en' ? helpContentEN : helpContentES;
 
     return (
@@ -336,9 +336,9 @@ function DeleteConfirmModal({ team, onClose, onConfirm }: { team: Team, onClose:
                 background: 'linear-gradient(135deg, #ef4444, #dc2626)',
                 borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0'
             }}>
-                <h3 style={{ color: 'white', margin: 0 }}>Delete Team?</h3>
+                <h3 style={{ color: 'white', margin: 0 }}>¿Eliminar Equipo?</h3>
                 <p style={{ color: 'rgba(255,255,255,0.9)', margin: '4px 0 0 0', fontSize: '0.85rem' }}>
-                    Confirm permanent removal of <strong>{team.name}</strong>.
+                    Confirmá la eliminación permanente de <strong>{team.name}</strong>.
                 </p>
             </div>
 
@@ -351,10 +351,10 @@ function DeleteConfirmModal({ team, onClose, onConfirm }: { team: Team, onClose:
                 }}>
                     <div style={{ fontSize: '3rem', marginBottom: 'var(--space-sm)' }}>🥀</div>
                     <p style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 600 }}>
-                        Are you absolutely sure?
+                        ¿Estás absolutamente seguro?
                     </p>
                     <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
-                        This will permanently delete this team and all associated tournaments, rostered players, and game performance records.
+                        Esto eliminará permanentemente este equipo y todos sus torneos, jugadores y registros de rendimiento asociados.
                     </p>
                 </div>
             </div>
@@ -365,7 +365,7 @@ function DeleteConfirmModal({ team, onClose, onConfirm }: { team: Team, onClose:
                     style={{ flex: 1 }}
                     onClick={onClose}
                 >
-                    Keep Team
+                    Conservar Equipo
                 </button>
                 <button
                     className="btn"
@@ -379,7 +379,7 @@ function DeleteConfirmModal({ team, onClose, onConfirm }: { team: Team, onClose:
                     }}
                     onClick={onConfirm}
                 >
-                    Delete Forever
+                    Eliminar para Siempre
                 </button>
             </div>
         </div>

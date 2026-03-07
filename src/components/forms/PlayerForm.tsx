@@ -26,8 +26,8 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
 
     const validate = () => {
         const errs: Record<string, string> = {};
-        if (!name.trim()) errs.name = 'Name is required';
-        if (!jerseyNumber.trim()) errs.jerseyNumber = 'Jersey number is required';
+        if (!name.trim()) errs.name = 'El nombre es obligatorio';
+        if (!jerseyNumber.trim()) errs.jerseyNumber = 'El número de camiseta es obligatorio';
         setErrors(errs);
         return Object.keys(errs).length === 0;
     };
@@ -81,13 +81,13 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
         return (
             <div className="modal-content">
                 <div className="modal-header">
-                    <h3>Bulk Player Import</h3>
-                    <p>Upload CSV/TXT or paste roster data from your league portal</p>
+                    <h3>Importación Masiva de Jugadores</h3>
+                    <p>Cargá un CSV/TXT o pegá los datos de tu portal de liga</p>
                 </div>
 
                 <div className="modal-body">
                     <div className="form-group">
-                        <label className="form-label">Upload Data File</label>
+                        <label className="form-label">Subir Archivo de Datos</label>
                         <div className="empty-state" style={{ padding: 'var(--space-lg)' }}>
                             <input
                                 type="file"
@@ -97,22 +97,22 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
                                 style={{ display: 'none' }}
                             />
                             <button type="button" className="btn btn-secondary" onClick={() => fileInputRef.current?.click()}>
-                                Select CSV or TXT File
+                                Seleccionar Archivo CSV o TXT
                             </button>
-                            <p className="text-muted mt-sm" style={{ fontSize: '0.75rem' }}>Format: Name, Jersey#, Position (one per line)</p>
+                            <p className="text-muted mt-sm" style={{ fontSize: '0.75rem' }}>Formato: Nombre, Número#, Posición (uno por línea)</p>
                             <div style={{ display: 'flex', gap: 'var(--space-md)', marginTop: 'var(--space-md)', justifyContent: 'center' }}>
                                 <button type="button" className="btn btn-ghost btn-sm" onClick={downloadCSVTemplate} style={{ color: 'var(--primary-color)' }}>
-                                    📥 Download Template (.csv)
+                                    📥 Descargar Plantilla (.csv)
                                 </button>
                                 <button type="button" className="btn btn-ghost btn-sm" onClick={downloadTXTTemplate} style={{ color: 'var(--primary-color)' }}>
-                                    📥 Download Template (.txt)
+                                    📥 Descargar Plantilla (.txt)
                                 </button>
                             </div>
                         </div>
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Or Paste Roster Data</label>
+                        <label className="form-label">O Pegá los Datos del Plantel</label>
                         <textarea
                             className="form-control"
                             value={importText}
@@ -125,7 +125,7 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
 
                 <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" onClick={() => setShowImport(false)} style={{ flex: 1 }}>
-                        Back
+                        Volver
                     </button>
                     <button
                         type="button"
@@ -134,7 +134,7 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
                         disabled={!importText.trim()}
                         style={{ flex: 2 }}
                     >
-                        Import {importText ? parsePlayerImport(importText, teamId).length : ''} Players
+                        Importar {importText ? parsePlayerImport(importText, teamId).length : ''} Jugadores
                     </button>
                 </div>
             </div>
@@ -145,12 +145,12 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
         <div className="modal-content">
             <div className="modal-header" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h3>{player ? 'Edit' : 'Add New'} Player</h3>
-                    <p>Enter individual player details for tracking</p>
+                    <h3>{player ? 'Editar' : 'Agregar Nuevo'} Jugador</h3>
+                    <p>Ingresá los datos individuales del jugador para el seguimiento</p>
                 </div>
                 {!player && onBulkImport && (
                     <button type="button" className="btn btn-ghost" onClick={() => setShowImport(true)} style={{ color: 'white' }}>
-                        Bulk Import
+                        Importación Masiva
                     </button>
                 )}
             </div>
@@ -159,7 +159,7 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
                 <div className="modal-body">
                     <div className="grid-2">
                         <div className="form-group">
-                            <label className="form-label">Full Name</label>
+                            <label className="form-label">Nombre Completo</label>
                             <input
                                 type="text"
                                 value={name}
@@ -170,7 +170,7 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
                             {errors.name && <span className="form-error">{errors.name}</span>}
                         </div>
                         <div className="form-group">
-                            <label className="form-label">Jersey #</label>
+                            <label className="form-label">Camiseta #</label>
                             <input
                                 type="text"
                                 value={jerseyNumber}
@@ -183,7 +183,7 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label mb-sm">Primary Position</label>
+                        <label className="form-label mb-sm">Posición Principal</label>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-sm)' }}>
                             {POSITIONS.map(pos => (
                                 <button
@@ -203,7 +203,7 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label mb-sm">Secondary Options</label>
+                        <label className="form-label mb-sm">Posiciones Secundarias</label>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-sm)' }}>
                             {POSITIONS.filter(p => p !== primaryPosition).map(pos => {
                                 const isActive = secondaryPositions.includes(pos);
@@ -234,14 +234,14 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
                 <div className="modal-footer">
                     {player && (
                         <button type="button" className="btn btn-danger" onClick={onDelete} style={{ marginRight: 'auto' }}>
-                            🗑 Delete
+                            🗑 Eliminar
                         </button>
                     )}
                     <button type="button" className="btn btn-secondary" onClick={onCancel} style={{ flex: 1 }}>
-                        Discard
+                        Descartar
                     </button>
                     <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>
-                        {player ? 'Save Profile' : 'Add to Roster'}
+                        {player ? 'Guardar Perfil' : 'Agregar al Plantel'}
                     </button>
                 </div>
             </form>

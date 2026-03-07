@@ -1,18 +1,34 @@
 import { useState, useMemo } from 'react';
-import type { Game, Player, Tournament } from '../../types';
+import type { Game, Player, Tournament, Team } from '../../types';
 import { calcBatting, calcPitching, calcFielding, formatAvg, formatERA, formatWHIP, formatIP, parseIP, getAvgLevel, getERALevel, getFldLevel } from '../../lib/calculations';
 import { StatTable } from '../ui/StatTable';
 import { EmptyState } from '../ui/EmptyState';
 import { exportTournamentReport } from '../../lib/pdfGenerator';
 
-type StatsView = 'batting' | 'pitching' | 'fielding';
+type StatsView = 'standings' | 'batting' | 'pitching' | 'fielding';
 
 interface StatsTabProps {
     games: Game[];
     players: Player[];
+    teams: Team[];
+    tournaments: Tournament[];
     tournament?: Tournament | null;
+    activeTeamName?: string;
     onAddGame?: () => void;
     onAddPlayer?: () => void;
+}
+
+interface TeamStandingRow {
+    id: string;
+    name: string;
+    gp: number;
+    w: number;
+    l: number;
+    t: number;
+    rf: number;
+    ra: number;
+    diff: number;
+    pct: number;
 }
 
 // ─── Batting Leaderboard ──────────────────────────────────────────────────────
@@ -39,11 +55,124 @@ interface PlayerFieldingRow {
     cCS?: number; cSB?: number;
 }
 
-export function StatsTab({ games, players, tournament, onAddGame, onAddPlayer }: StatsTabProps) {
-    const [view, setView] = useState<StatsView>('batting');
+export function StatsTab({ games, players, teams, tournaments, tournament, activeTeamName = 'Mi Equipo', onAddGame, onAddPlayer }: StatsTabProps) {
+    const [view, setView] = useState<StatsView>(tournament ? 'standings' : 'batting');
+
+    // ── Build standings rows ────────────────────────────────────────────────
+    const standingsData: TeamStandingRow[] = useMemo(() => {
+        if (!tournament) return [];
+
+        const standings: Record<string, TeamStandingRow> = {};
+
+        const getRow = (name: string): TeamStandingRow => {
+            const normalized = name.trim().toUpperCase();
+            if (!standings[normalized]) {
+                standings[normalized] = {
+                    id: normalized, name: normalized, gp: 0, w: 0, l: 0, t: 0, rf: 0, ra: 0, diff: 0, pct: 0
+                };
+            }
+            return standings[normalized];
+        };
+
+        // 1. Deduplicate games to avoid double counting across different managed teams
+        const uniqueGames = new Map<string, { teamA: string, teamB: string, scoreA: number, scoreB: number }>();
+
+        // Filter games for the current tournament name (extra safety)
+        const eventRelatedGames = games.filter(g => {
+            const gameTourney = tournaments.find(t => t.id === g.tournamentId);
+            return gameTourney && gameTourney.name.trim().toUpperCase() === tournament.name.trim().toUpperCase();
+        });
+
+        eventRelatedGames.forEach(g => {
+            // Find who recorded this game
+            const tourneyObj = tournaments.find(t => t.id === g.tournamentId);
+            const ownerTeamId = tourneyObj?.participatingTeamIds?.[0];
+            const ownerTeam = teams.find(t => t.id === ownerTeamId);
+
+            const recorderName = (ownerTeam?.name || activeTeamName).trim().toUpperCase();
+            const opponentName = g.opponent.trim().toUpperCase();
+
+            // Unique key: Date + Event + Sorted Teams + Scores
+            const sortedTeams = [recorderName, opponentName].sort();
+            const sortedScores = [g.teamScore, g.opponentScore].sort();
+            const gameKey = `${g.date}|${tournament.name.toUpperCase()}|${sortedTeams.join('-')}|${sortedScores.join('-')}`;
+
+            if (!uniqueGames.has(gameKey)) {
+                uniqueGames.set(gameKey, {
+                    teamA: recorderName,
+                    teamB: opponentName,
+                    scoreA: g.teamScore,
+                    scoreB: g.opponentScore
+                });
+            }
+        });
+
+        // 2. Process unique games and update BOTH sides
+        uniqueGames.forEach(g => {
+            const rowA = getRow(g.teamA);
+            const rowB = getRow(g.teamB);
+
+            if (rowA.id === rowB.id) return; // Self-play safety
+
+            // Process side A
+            rowA.gp++;
+            rowA.rf += g.scoreA;
+            rowA.ra += g.scoreB;
+            if (g.scoreA > g.scoreB) rowA.w++;
+            else if (g.scoreA < g.scoreB) rowA.l++;
+            else rowA.t++;
+
+            // Process side B
+            rowB.gp++;
+            rowB.rf += g.scoreB;
+            rowB.ra += g.scoreA;
+            if (g.scoreB > g.scoreA) rowB.w++;
+            else if (g.scoreB < g.scoreA) rowB.l++;
+            else rowB.t++;
+        });
+
+        return Object.values(standings).map(row => {
+            row.diff = row.rf - row.ra;
+            row.pct = row.gp > 0 ? (row.w + (row.t * 0.5)) / row.gp : 0;
+            return row;
+        }).sort((a, b) => b.pct - a.pct || b.diff - a.diff);
+    }, [games, tournament, players, teams, tournaments, activeTeamName]);
+
+    // ── Column definitions ──────────────────────────────────────────────────
+    const standingsColumns = [
+        { key: 'name', label: 'EQUIPO', className: 'text-bold', sortable: true },
+        { key: 'gp', label: 'PJ', sortable: true },
+        { key: 'w', label: 'G', sortable: true },
+        { key: 'l', label: 'P', sortable: true },
+        { key: 't', label: 'E', sortable: true },
+        {
+            key: 'pct',
+            label: '%G',
+            sortable: true,
+            render: (row: TeamStandingRow) => (
+                <span className="text-mono">
+                    {row.pct === 1 ? '1.000' : row.pct.toFixed(3).replace(/^0/, '')}
+                </span>
+            )
+        },
+        { key: 'rf', label: 'CF', sortable: true },
+        { key: 'ra', label: 'CC', sortable: true },
+        {
+            key: 'diff',
+            label: 'DIF',
+            sortable: true,
+            render: (row: TeamStandingRow) => (
+                <span className={`text-mono ${row.diff > 0 ? 'text-success' : row.diff < 0 ? 'text-danger' : ''}`}>
+                    {row.diff > 0 ? `+${row.diff}` : row.diff}
+                </span>
+            )
+        },
+    ];
+    // ... rest of the file ...
 
     // ── Build batting rows ──────────────────────────────────────────────────
     const battingData: PlayerBattingRow[] = useMemo(() => players.map(player => {
+        // ... (rest of the calculation logic remains same)
         const pgs = games.flatMap(g => g.playerStats.filter(ps => ps.playerId === player.id));
         const s = calcBatting(pgs);
         return {
@@ -178,12 +307,12 @@ export function StatsTab({ games, players, tournament, onAddGame, onAddPlayer }:
             <div className="dash-content">
                 <EmptyState
                     icon="📊"
-                    title="No Statistics Available"
-                    message="Add players and games to see detailed statistics."
+                    title="Sin Estadísticas Disponibles"
+                    message="Agrega jugadores y partidos para ver estadísticas detalladas."
                     action={
                         <div style={{ display: 'flex', gap: 'var(--space-md)' }}>
-                            <button className="btn btn-new" onClick={onAddPlayer}>+ Add Player</button>
-                            <button className="btn btn-new" onClick={onAddGame}>+ Add Game</button>
+                            <button className="btn btn-new" onClick={onAddPlayer}>+ Agregar Jugador</button>
+                            <button className="btn btn-new" onClick={onAddGame}>+ Agregar Partido</button>
                         </div>
                     }
                 />
@@ -221,6 +350,9 @@ export function StatsTab({ games, players, tournament, onAddGame, onAddPlayer }:
                     padding: '4px',
                     gap: '2px',
                 }}>
+                    {tournament && (
+                        <button style={tabStyle(view === 'standings')} onClick={() => setView('standings')}>🏆 Posiciones</button>
+                    )}
                     <button style={tabStyle(view === 'batting')} onClick={() => setView('batting')}>⚾ Batting</button>
                     <button style={tabStyle(view === 'pitching')} onClick={() => setView('pitching')}>🥎 Pitching</button>
                     <button style={tabStyle(view === 'fielding')} onClick={() => setView('fielding')}>🧤 Fielding</button>
@@ -234,9 +366,23 @@ export function StatsTab({ games, players, tournament, onAddGame, onAddPlayer }:
                     }}
                     style={{ color: 'var(--accent-primary)', fontWeight: '700' }}
                 >
-                    📄 Export PDF Report
+                    📄 Exportar Informe PDF
                 </button>
             </div>
+
+            {/* STANDINGS VIEW */}
+            {view === 'standings' && tournament && (
+                <>
+                    <div className="stat-table-wrapper card" style={{ padding: 0, overflow: 'hidden' }}>
+                        <StatTable data={standingsData} columns={standingsColumns} keyField="id" />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-xl)' }}>
+                        <div className="text-muted" style={{ fontSize: '0.8125rem', fontWeight: '500' }}>
+                            Posiciones calculadas en base a <strong className="text-primary">{games.length}</strong> partidos registrados
+                        </div>
+                    </div>
+                </>
+            )}
 
             {/* BATTING LEADERBOARD */}
             {view === 'batting' && (
@@ -246,7 +392,7 @@ export function StatsTab({ games, players, tournament, onAddGame, onAddPlayer }:
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-xl)' }}>
                         <div className="text-muted" style={{ fontSize: '0.8125rem', fontWeight: '500' }}>
-                            Showing <strong className="text-primary">{battingData.length}</strong> players with plate appearances
+                            Mostrando <strong className="text-primary">{battingData.length}</strong> jugadores con turnos al bate
                         </div>
                         <PerformanceLegend />
                     </div>
@@ -259,8 +405,8 @@ export function StatsTab({ games, players, tournament, onAddGame, onAddPlayer }:
                     {pitchingData.length === 0 ? (
                         <EmptyState
                             icon="🥎"
-                            title="No Pitching Stats"
-                            message="Enter innings pitched (IP > 0) in a game's Player Stats tab to see pitching data here."
+                            title="Sin Stats de Pitching"
+                            message="Ingresá innings lanzados (IP > 0) en la pestaña Stats Jugadores de un partido para ver los datos de pitching aquí."
                         />
                     ) : (
                         <>
@@ -269,7 +415,7 @@ export function StatsTab({ games, players, tournament, onAddGame, onAddPlayer }:
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-xl)' }}>
                                 <div className="text-muted" style={{ fontSize: '0.8125rem', fontWeight: '500' }}>
-                                    Showing <strong className="text-primary">{pitchingData.length}</strong> pitchers · ERA uses 7-inning softball standard
+                                    Mostrando <strong className="text-primary">{pitchingData.length}</strong> pitchers · ERA usa el estándar de softball de 7 innings
                                 </div>
                                 <PerformanceLegend />
                             </div>
@@ -284,8 +430,8 @@ export function StatsTab({ games, players, tournament, onAddGame, onAddPlayer }:
                     {fieldingData.length === 0 ? (
                         <EmptyState
                             icon="🧤"
-                            title="No Fielding Stats"
-                            message="Enter PO, A, or E values in a game's Player Stats tab to see fielding data here."
+                            title="Sin Stats de Fielding"
+                            message="Ingresá valores de PO, A o E en la pestaña Stats Jugadores de un partido para ver los datos de fielding aquí."
                         />
                     ) : (
                         <>
@@ -294,7 +440,7 @@ export function StatsTab({ games, players, tournament, onAddGame, onAddPlayer }:
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-xl)' }}>
                                 <div className="text-muted" style={{ fontSize: '0.8125rem', fontWeight: '500' }}>
-                                    Showing <strong className="text-primary">{fieldingData.length}</strong> fielders · CS/SB-A shown for catchers only
+                                    Mostrando <strong className="text-primary">{fieldingData.length}</strong> fielders · CS/SB-A solo para catchers
                                 </div>
                                 <PerformanceLegend />
                             </div>
@@ -309,7 +455,7 @@ export function StatsTab({ games, players, tournament, onAddGame, onAddPlayer }:
 function PerformanceLegend() {
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-lg)' }}>
-            <span className="text-bold text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>Legend:</span>
+            <span className="text-bold text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>Leyenda:</span>
             <div style={{ display: 'flex', gap: '16px', fontSize: '0.7rem', fontWeight: '800', textTransform: 'uppercase' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--elite)' }}></div>
@@ -317,11 +463,11 @@ function PerformanceLegend() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--avg)' }}></div>
-                    <span style={{ color: 'var(--avg)' }}>Avg</span>
+                    <span style={{ color: 'var(--avg)' }}>Prom.</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--under)' }}></div>
-                    <span style={{ color: 'var(--under)' }}>Under</span>
+                    <span style={{ color: 'var(--under)' }}>Bajo</span>
                 </div>
             </div>
         </div>

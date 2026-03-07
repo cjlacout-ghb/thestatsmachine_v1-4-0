@@ -22,11 +22,11 @@ export function GamesTab({ games, players, tournament: _tournament, onSelectGame
             <div className="dash-content">
                 <EmptyState
                     icon="📅"
-                    title="No Games Yet"
-                    message="Add a game to start tracking statistics."
+                    title="Aún no hay Partidos"
+                    message="Agrega un partido para comenzar a seguir las estadísticas."
                     action={
                         <button className="btn btn-new" onClick={onAddGame}>
-                            + Add Game
+                            + Agregar Partido
                         </button>
                     }
                 />
@@ -35,7 +35,7 @@ export function GamesTab({ games, players, tournament: _tournament, onSelectGame
     }
 
     const getPlayerName = (id: string) =>
-        players.find(p => p.id === id)?.name || 'Unknown';
+        players.find(p => p.id === id)?.name || 'Desconocido';
 
     // Sort games by date ascending (old to new)
     const sortedGames = [...games].sort((a, b) =>
@@ -100,14 +100,14 @@ export function GamesTab({ games, players, tournament: _tournament, onSelectGame
                                                 background: isWin ? 'var(--elite)' : isLoss ? 'var(--under)' : 'var(--avg)',
                                                 color: 'white'
                                             }}>
-                                                {isWin ? 'WIN' : isLoss ? 'LOSS' : 'TIE'}
+                                                {isWin ? 'GANA' : isLoss ? 'PIERDE' : 'EMPATE'}
                                             </span>
                                             <h4 className="text-bold" style={{ fontSize: '1.125rem' }}>
                                                 {game.homeAway === 'home' ? `${game.opponent} @ ${teamName}` : `${teamName} @ ${game.opponent}`}
                                             </h4>
                                         </div>
                                         <div className="text-muted" style={{ fontSize: '0.8125rem', fontWeight: '500' }}>
-                                            {game.homeAway === 'home' ? '🏠 Home' : '✈ Away'} • {game.gameType.toUpperCase()}
+                                            {game.homeAway === 'home' ? '🏠 Local' : '✈ Visitante'} • {game.gameType.toUpperCase()}
                                         </div>
                                     </div>
                                 </div>
@@ -115,7 +115,7 @@ export function GamesTab({ games, players, tournament: _tournament, onSelectGame
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '48px' }}>
                                     {topBatter && topBatter.h > 0 && (
                                         <div className="text-right" style={{ display: 'none' }}>
-                                            <p className="form-label" style={{ fontSize: '0.625rem' }}>Top Performer</p>
+                                            <p className="form-label" style={{ fontSize: '0.625rem' }}>Máximo Rendimiento</p>
                                             <p className="text-bold" style={{ fontSize: '0.875rem' }}>
                                                 {getPlayerName(topBatter.playerId)}
                                                 <span className="text-mono" style={{ marginLeft: '8px', color: 'var(--accent-primary)' }}>
@@ -151,7 +151,7 @@ export function GamesTab({ games, players, tournament: _tournament, onSelectGame
                                                 if (onOpenPlayerStats) onOpenPlayerStats(game);
                                             }}
                                         >
-                                            {game.playerStats && game.playerStats.length > 0 ? "✅ Player Stats" : "📈 Player Stats"}
+                                            {game.playerStats && game.playerStats.length > 0 ? "✅ Stats Jugadores" : "📈 Stats Jugadores"}
                                         </button>
                                     </div>
                                 </div>
@@ -169,8 +169,8 @@ export function GamesTab({ games, players, tournament: _tournament, onSelectGame
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
                         <div className="icon-circle" style={{ background: 'var(--bg-card)', fontSize: '1.2rem', width: '40px', height: '40px' }}>+</div>
                         <div>
-                            <h3 className="text-bold" style={{ fontSize: '1rem' }}>Log New Game</h3>
-                            <p className="text-muted text-sm">Add another game to this event</p>
+                            <h3 className="text-bold" style={{ fontSize: '1rem' }}>Registrar Nuevo Partido</h3>
+                            <p className="text-muted text-sm">Agregar otro partido a este evento</p>
                         </div>
                     </div>
                 </div>

@@ -22,7 +22,6 @@ function App() {
 
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
-  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
   const [showMigrationBanner, setShowMigrationBanner] = useState(false);
   // Initialize and Load data
   useEffect(() => {
@@ -78,12 +77,13 @@ function App() {
     [data.players, activeTeam]
   );
 
-  const filteredGames = useMemo(
-    () => activeTournament
-      ? data.games.filter(g => g.tournamentId === activeTournament.id)
-      : [],
-    [data.games, activeTournament]
-  );
+  const filteredGames = useMemo(() => {
+    if (!activeTournament) return [];
+    const relatedTourneyIds = data.tournaments
+      .filter(t => t.name === activeTournament.name)
+      .map(t => t.id);
+    return data.games.filter(g => relatedTourneyIds.includes(g.tournamentId));
+  }, [data.games, data.tournaments, activeTournament]);
 
   const searchGames = useMemo(
     () => activeTeam
@@ -105,12 +105,12 @@ function App() {
       setSaveStatus('saved');
     } catch (e) {
       setSaveStatus('unsaved');
-      alert('Error saving team');
+      alert('Error al guardar el equipo');
     }
   }, []);
 
   const handleDeleteTeam = useCallback(async (id: string) => {
-    if (confirm('Delete this team and all its nested data?')) {
+    if (confirm('¿Eliminar este equipo y todos sus datos asociados?')) {
       const newData = await deleteTeam(id);
       setData(newData);
       if (activeTeam?.id === id) {
@@ -131,7 +131,7 @@ function App() {
   }, []);
 
   const handleDeleteTournament = useCallback(async (id: string) => {
-    if (confirm('Delete tournament?')) {
+    if (confirm('¿Eliminar este evento?')) {
       const newData = await deleteTournament(id);
       setData(newData);
       if (activeTournament?.id === id) {
@@ -163,30 +163,30 @@ function App() {
   }, []);
 
   const handleDeletePlayer = useCallback(async (id: string) => {
-    if (confirm('Delete player?')) {
+    if (confirm('¿Eliminar este jugador?')) {
       const newData = await deletePlayer(id);
       setData(newData);
     }
   }, []);
 
   const handleDeleteGame = useCallback(async (id: string) => {
-    if (confirm('Delete game record?')) {
+    if (confirm('¿Eliminar este registro de partido?')) {
       const newData = await deleteGame(id);
       setData(newData);
     }
   }, []);
 
   const handleImportData = useCallback(async (imported: AppData) => {
-    if (data.teams.length > 0 && !confirm('Overwrite all current data?')) return;
+    if (data.teams.length > 0 && !confirm('¿Sobreescribir todos los datos actuales?')) return;
 
     try {
       await storageManager.setDriver(new LocalStorageDriver());
       await saveData(imported);
       setData(imported);
-      alert('Import successful! App will restart.');
+      alert('¡Importación exitosa! La aplicación se reiniciará.');
       window.location.reload();
     } catch (e) {
-      alert('Import failed');
+      alert('Error al importar los datos');
     }
   }, [data]);
 
@@ -211,7 +211,7 @@ function App() {
     try {
       if ('showOpenFilePicker' in window) {
         const [fileHandle] = await (window as any).showOpenFilePicker({
-          types: [{ description: 'JSON Backup File', accept: { 'application/json': ['.json'] } }],
+          types: [{ description: 'Archivo de respaldo JSON', accept: { 'application/json': ['.json'] } }],
         });
         const file = await fileHandle.getFile();
         const text = await file.text();
@@ -229,7 +229,7 @@ function App() {
             const importedData = JSON.parse(text);
             await handleImportData(importedData);
           } catch (err) {
-            alert('Invalid JSON file');
+            alert('Archivo JSON inválido');
           }
         };
         input.click();
@@ -237,7 +237,7 @@ function App() {
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         console.error('Failed to load file:', err);
-        alert('Failed to load file: ' + err.message);
+        alert('Error al cargar el archivo: ' + err.message);
       }
     }
   };
@@ -251,10 +251,6 @@ function App() {
             activeTeam={activeTeam}
             saveStatus={saveStatus}
             lastSaveTime={lastSaveTime}
-            data={data}
-            filteredPlayers={filteredPlayers}
-            searchGames={searchGames}
-            onNavigateSearch={() => { }}
             onOpenHelp={() => setModalType('help')}
             onSwitchTeam={() => setActiveTeam(null)}
             onSaveToDisk={onSaveToDisk}
@@ -304,19 +300,6 @@ function App() {
         activeTeam={activeTeam}
         saveStatus={saveStatus}
         lastSaveTime={lastSaveTime}
-        data={data}
-        filteredPlayers={filteredPlayers}
-        searchGames={searchGames}
-        onNavigateSearch={(target) => {
-          setHighlightedItemId(target.item.id);
-          if (target.type === 'player') {
-            setActiveTournament(null);
-            setTimeout(() => setActiveTab('players'), 0);
-          } else {
-            setActiveTournament(target.tournament);
-            setTimeout(() => setActiveTab('games'), 0);
-          }
-        }}
         onOpenHelp={() => setModalType('help')}
         onSwitchTeam={() => setActiveTeam(null)}
         onSaveToDisk={onSaveToDisk}
@@ -326,8 +309,8 @@ function App() {
 
       {showMigrationBanner && (
         <div className="banner warning" style={{ textAlign: 'center', padding: '12px' }}>
-          ⚠️ You are using browser storage. [Click here] to migrate to a local file for better security.
-          <button onClick={() => setShowMigrationBanner(false)} className="btn-link" style={{ marginLeft: '12px' }}>Dismiss</button>
+          ⚠️ Estás usando el almacenamiento del navegador. [Haz clic aquí] para migrar a un archivo local con mayor seguridad.
+          <button onClick={() => setShowMigrationBanner(false)} className="btn-link" style={{ marginLeft: '12px' }}>Descartar</button>
         </div>
       )}
 
@@ -369,7 +352,6 @@ function App() {
             filteredPlayers={filteredPlayers}
             filteredGames={filteredGames}
             teamGames={searchGames}
-            highlightedItemId={highlightedItemId}
             onSetActiveTab={setActiveTab}
             onSetActiveTournament={setActiveTournament}
             onAddPlayer={() => { setEditItem(null); setModalType('player'); }}
@@ -385,6 +367,7 @@ function App() {
               setEditItem(game);
               setModalType('player_stats');
             }}
+            onSwitchTeam={() => setActiveTeam(null)}
           />
 
           <AppModals

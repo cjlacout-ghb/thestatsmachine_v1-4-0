@@ -69,11 +69,11 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
             <div className="dash-content">
                 <EmptyState
                     icon="🥎"
-                    title="No Games Recorded"
-                    message="Enter game data to see team statistics."
+                    title="Sin Partidos Registrados"
+                    message="Ingresá datos de partidos para ver las estadísticas del equipo."
                     action={
                         <button className="btn btn-new" onClick={onAddGame}>
-                            + Add Game
+                            + Agregar Partido
                         </button>
                     }
                 />
@@ -99,7 +99,7 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
     const losses = useMemo(() => games.filter(g => g.teamScore < g.opponentScore).length, [games]);
     const ties = useMemo(() => games.filter(g => g.teamScore === g.opponentScore).length, [games]);
     const streak = useMemo(() => computeStreak(games), [games]);
-    const streakLabel = streak ? `${streak} Streak` : `${games.length} GP`;
+    const streakLabel = streak ? `${streak} Racha` : `${games.length} PJ`;
 
     // ── Trend deltas vs last 5 games ──────────────────────────────────────────
     const { avgDelta, eraDelta, fldDelta } = useMemo(() => {
@@ -116,9 +116,9 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
     }, [games, sorted, batting, pitching, fielding]);
 
     function trendLabel(delta: number | null, invert = false): { text: string; up: boolean } {
-        if (delta === null) return { text: 'vs last 5 games', up: true };
+        if (delta === null) return { text: 'vs últ. 5 partidos', up: true };
         const up = invert ? delta < 0 : delta > 0;
-        return { text: `${delta > 0 ? '+' : ''}${fmtDelta(delta, 3)} vs last 5`, up };
+        return { text: `${delta > 0 ? '+' : ''}${fmtDelta(delta, 3)} vs últ. 5`, up };
     }
 
     const avgTrend = trendLabel(avgDelta);
@@ -194,11 +194,11 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
                 <div className="card" style={{ padding: 'var(--space-xl)' }}>
                     <div className="card-header" style={{ marginBottom: 'var(--space-2xl)' }}>
                         <div>
-                            <h3 className="card-title">{team.name} — Batting Average per Game</h3>
+                            <h3 className="card-title">{team.name} — Promedio de Bateo por Partido</h3>
                             <p className="card-subtitle">
                                 {lastAvg !== null
-                                    ? <><span className={`text-bold ${getAvgLevel(lastAvg)}`}>{formatAvg(lastAvg)}</span> last game</>
-                                    : 'No game data'
+                                    ? <><span className={`text-bold ${getAvgLevel(lastAvg)}`}>{formatAvg(lastAvg)}</span> últ. partido</>
+                                    : 'Sin datos de partido'
                                 }
                                 {avgDelta !== null && (
                                     <span style={{ marginLeft: '8px', color: avgDelta >= 0 ? 'var(--elite)' : 'var(--under)' }}>
@@ -208,7 +208,7 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
                             </p>
                         </div>
                         <span className="text-muted" style={{ fontSize: '0.75rem', fontWeight: '700' }}>
-                            Last {chartGames.length} game{chartGames.length !== 1 ? 's' : ''}
+                            Últ. {chartGames.length} partido{chartGames.length !== 1 ? 's' : ''}
                         </span>
                     </div>
 
@@ -283,7 +283,7 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
                         </div>
                     ) : (
                         <div style={{ height: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <p className="text-muted">Not enough games to display trend.</p>
+                            <p className="text-muted">Pocos partidos para mostrar la tendencia.</p>
                         </div>
                     )}
                 </div>
@@ -292,41 +292,41 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xl)' }}>
                     {/* Quick Actions */}
                     <div className="card">
-                        <h3 className="card-title mb-lg">Quick Actions</h3>
+                        <h3 className="card-title mb-lg">Acciones Rápidas</h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
                             <div className="player-card" onClick={onAddGame} style={{ padding: 'var(--space-md)', flexDirection: 'row', textAlign: 'left', cursor: 'pointer', borderStyle: 'dashed' }}>
                                 <div className="logo-icon" style={{ borderRadius: '50%', width: '40px', height: '40px', fontSize: '16px', background: 'var(--brand-blue)', boxShadow: 'none' }}>+</div>
                                 <div>
-                                    <p className="text-bold" style={{ fontSize: '0.875rem' }}>Log New Game</p>
-                                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Record play-by-play data</p>
+                                    <p className="text-bold" style={{ fontSize: '0.875rem' }}>Registrar Nuevo Partido</p>
+                                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Registrar datos del partido</p>
                                 </div>
                             </div>
                             <div className="player-card" onClick={onAddPlayer} style={{ padding: 'var(--space-md)', flexDirection: 'row', textAlign: 'left', cursor: 'pointer' }}>
                                 <div className="logo-icon" style={{ borderRadius: '50%', width: '40px', height: '40px', fontSize: '16px', background: 'var(--brand-blue-soft)', color: 'var(--brand-blue)', boxShadow: 'none' }}>🏃</div>
                                 <div>
-                                    <p className="text-bold" style={{ fontSize: '0.875rem' }}>Add New Athlete</p>
-                                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Add player to roster</p>
+                                    <p className="text-bold" style={{ fontSize: '0.875rem' }}>Agregar Nuevo Jugador</p>
+                                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Agregar jugador al plantel</p>
                                 </div>
                             </div>
                             <div className="player-card" onClick={onManageRoster} style={{ padding: 'var(--space-md)', flexDirection: 'row', textAlign: 'left', cursor: 'pointer' }}>
                                 <div className="logo-icon" style={{ borderRadius: '50%', width: '40px', height: '40px', fontSize: '16px', background: 'var(--accent-soft)', color: 'var(--accent-primary)', boxShadow: 'none' }}>👥</div>
                                 <div>
-                                    <p className="text-bold" style={{ fontSize: '0.875rem' }}>Roster Management</p>
-                                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Edit player details</p>
+                                    <p className="text-bold" style={{ fontSize: '0.875rem' }}>Gestión del Plantel</p>
+                                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Editar datos de jugadores</p>
                                 </div>
                             </div>
                             <div className="player-card" onClick={() => onEditTeam?.(team)} style={{ padding: 'var(--space-md)', flexDirection: 'row', textAlign: 'left', cursor: 'pointer' }}>
                                 <div className="logo-icon" style={{ borderRadius: '50%', width: '40px', height: '40px', fontSize: '16px', background: 'var(--avg)', color: 'white', boxShadow: 'none' }}>⚙️</div>
                                 <div>
-                                    <p className="text-bold" style={{ fontSize: '0.875rem' }}>Edit Team Details</p>
-                                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Rename or change description</p>
+                                    <p className="text-bold" style={{ fontSize: '0.875rem' }}>Editar Datos del Equipo</p>
+                                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Cambiar nombre o descripción</p>
                                 </div>
                             </div>
                             <div className="player-card" onClick={() => { if (team) onDeleteTeam?.(team.id); }} style={{ padding: 'var(--space-md)', flexDirection: 'row', textAlign: 'left', cursor: 'pointer', borderColor: 'var(--under)' }}>
                                 <div className="logo-icon" style={{ borderRadius: '50%', width: '40px', height: '40px', fontSize: '16px', background: 'var(--under)', color: 'white', boxShadow: 'none' }}>🗑️</div>
                                 <div>
-                                    <p className="text-bold" style={{ fontSize: '1rem', color: 'var(--under)' }}>Delete Team</p>
-                                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Permanently remove organization</p>
+                                    <p className="text-bold" style={{ fontSize: '1rem', color: 'var(--under)' }}>Eliminar Equipo</p>
+                                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Eliminar organización permanentemente</p>
                                 </div>
                             </div>
                         </div>
@@ -335,11 +335,11 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
                     {/* Recent Leaders card */}
                     <div className="card" style={{ flex: 1 }}>
                         <div className="card-header" style={{ marginBottom: 'var(--space-lg)' }}>
-                            <h3 className="card-title">Season Leaders</h3>
+                            <h3 className="card-title">Líderes de Temporada</h3>
                             <span className="text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase' }}>AVG</span>
                         </div>
                         {leaderboard.length === 0 ? (
-                            <p className="text-muted" style={{ fontSize: '0.8rem' }}>No batting stats recorded yet.</p>
+                            <p className="text-muted" style={{ fontSize: '0.8rem' }}>Aún no hay stats de bateo registrados.</p>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
                                 {leaderboard.map(({ player, avg, rbi, g }, rank) => {
@@ -373,8 +373,8 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
             {/* Recent Games mini-log */}
             <div className="card" style={{ marginTop: 'var(--space-xl)' }}>
                 <div className="card-header" style={{ marginBottom: 'var(--space-lg)' }}>
-                    <h3 className="card-title">Recent Games</h3>
-                    <span className="text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase' }}>Last {recentGames.length}</span>
+                    <h3 className="card-title">Partidos Recientes</h3>
+                    <span className="text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase' }}>Últ. {recentGames.length}</span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     {recentGames.map(g => {
@@ -409,7 +409,7 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
             {/* Aggregate stat panels */}
             <div className="grid-3" style={{ marginTop: 'var(--space-xl)' }}>
                 <div className="card">
-                    <h3 className="card-title mb-lg" style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>Team Batting</h3>
+                    <h3 className="card-title mb-lg" style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>Bateo del Equipo</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
                         {[
                             { label: 'AVG', val: formatAvg(batting.avg), lvl: getAvgLevel(batting.avg) },
@@ -425,7 +425,7 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
                     </div>
                 </div>
                 <div className="card">
-                    <h3 className="card-title mb-lg" style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>Team Pitching</h3>
+                    <h3 className="card-title mb-lg" style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>Pitching del Equipo</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
                         {[
                             { label: 'ERA', val: formatERA(pitching.era), lvl: getERALevel(pitching.era) },
@@ -441,7 +441,7 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
                     </div>
                 </div>
                 <div className="card">
-                    <h3 className="card-title mb-lg" style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>Team Fielding</h3>
+                    <h3 className="card-title mb-lg" style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>Fielding del Equipo</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
                         {[
                             { label: 'FLD%', val: formatPct(fielding.fldPct), lvl: getFldLevel(fielding.fldPct), show: true },

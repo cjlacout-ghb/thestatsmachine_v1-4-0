@@ -29,6 +29,7 @@ interface AppContentProps {
     onDeleteTeam: (id: string) => void;
     onDeleteTournament: (id: string) => void;
     onOpenPlayerStats: (g: Game) => void;
+    onSwitchTeam: () => void;
 }
 
 export function AppContent({
@@ -52,7 +53,8 @@ export function AppContent({
     onEditTournament,
     onDeleteTeam,
     onDeleteTournament,
-    onOpenPlayerStats
+    onOpenPlayerStats,
+    onSwitchTeam
 }: AppContentProps) {
 
     const renderTab = () => {
@@ -80,6 +82,15 @@ export function AppContent({
                         onAddTournament={onAddTournament}
                         onEditTournament={onEditTournament}
                         onDeleteTournament={(t) => onDeleteTournament(t.id)}
+                        onAddGameToTournament={(t) => {
+                            onSetActiveTournament(t);
+                            onAddGame();
+                        }}
+                        onSwitchTeam={onSwitchTeam}
+                        onViewStats={(t) => {
+                            onSetActiveTournament(t);
+                            onSetActiveTab('stats');
+                        }}
                     />
                 );
             case 'team':
@@ -114,8 +125,11 @@ export function AppContent({
                 return (
                     <StatsTab
                         games={activeTournament ? filteredGames : teamGames}
-                        players={filteredPlayers}
+                        players={data.players}
+                        teams={data.teams}
+                        tournaments={data.tournaments}
                         tournament={activeTournament}
+                        activeTeamName={activeTeam?.name}
                         onAddGame={onAddGame}
                         onAddPlayer={onAddPlayer}
                     />
