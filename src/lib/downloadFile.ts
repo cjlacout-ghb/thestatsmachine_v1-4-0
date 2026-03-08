@@ -44,7 +44,6 @@ const triggerDownload = (
     // Guard: never allow empty content through
     if (!content || content.length < 2) {
         console.error('[DOWNLOAD] Aborted — content is empty or undefined');
-        alert('Download failed: content is empty. Check console for details.');
         return;
     }
 

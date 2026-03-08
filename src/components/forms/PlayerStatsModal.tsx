@@ -102,7 +102,7 @@ export function PlayerStatsModal({ game, teamName, players, onSave, onCancel }: 
         setImportText('');
 
         if (missingPlayers.length > 0) {
-            alert(`⚠️ Jugadores no encontrados en el plantel y omitidos:\n${missingPlayers.join(", ")}`);
+            setImportWarning(`Jugadores no encontrados en el plantel y omitidos: ${missingPlayers.join(", ")}`);
         }
     };
 

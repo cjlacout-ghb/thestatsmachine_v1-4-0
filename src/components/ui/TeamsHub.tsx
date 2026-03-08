@@ -13,12 +13,13 @@ interface TeamsHubProps {
     onDemoData?: () => void;
     onImportData: (data: AppData) => void;
     onOpenHelp: () => void;
+    onError?: (title: string, message: string) => void;
     currentStep?: 1 | 2;
     onStepClick?: (step: number) => void;
 }
 
 
-export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, onEditTeam, onDeleteTeam, onDemoData, onImportData, onOpenHelp, currentStep = 1, onStepClick }: TeamsHubProps) {
+export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, onEditTeam, onDeleteTeam, onDemoData, onImportData, onOpenHelp, onError, currentStep = 1, onStepClick }: TeamsHubProps) {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -36,11 +37,11 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                 if (e.target) e.target.value = '';
             } catch (err) {
                 console.error('Import error:', err);
-                alert('Formato de archivo JSON inválido.');
+                if (onError) onError('Formato Inválido', 'El archivo seleccionado no es un respaldo JSON válido.');
             }
         };
         reader.onerror = () => {
-            alert('Error al leer el archivo.');
+            if (onError) onError('Error de Lectura', 'No se pudo leer el archivo seleccionado.');
         };
         reader.readAsText(file);
     };

@@ -8,7 +8,7 @@ import { PlayerStatsModal } from '../forms/PlayerStatsModal';
 import { resetDatabase } from '../../lib/storage';
 
 
-export type ModalType = 'team' | 'tournament' | 'player' | 'game' | 'erase' | 'help' | 'player_stats' | 'delete_team' | 'delete_player' | 'delete_tournament' | 'delete_game' | 'import_success' | 'import_confirm' | null;
+export type ModalType = 'team' | 'tournament' | 'player' | 'game' | 'erase' | 'help' | 'player_stats' | 'delete_team' | 'delete_player' | 'delete_tournament' | 'delete_game' | 'import_success' | 'import_confirm' | 'info' | null;
 
 interface AppModalsProps {
     modalType: ModalType;
@@ -163,6 +163,49 @@ export function AppModals({
                         onCancel={onClose}
                     />
                 )}
+                {modalType === 'info' && editItem && (
+                    <GenericMessageModal
+                        title={(editItem as any).title || 'Atención'}
+                        message={(editItem as any).message || ''}
+                        type={(editItem as any).type || 'info'}
+                        onClose={onClose}
+                    />
+                )}
+            </div>
+        </div>
+    );
+}
+
+// ---------------------------------------------------------------------------
+// GenericMessageModal — premium replacement for browser alert()
+// ---------------------------------------------------------------------------
+function GenericMessageModal({ title, message, type, onClose }: { title: string, message: string, type: 'info' | 'error' | 'warning', onClose: () => void }) {
+    const icon = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+    const headerBg = type === 'error' ? 'linear-gradient(135deg, #ef4444, #b91c1c)' :
+        type === 'warning' ? 'linear-gradient(135deg, #f59e0b, #d97706)' :
+            'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))';
+
+    return (
+        <div className="modal-content" style={{ minWidth: '350px', maxWidth: '450px', textAlign: 'center' }}>
+            <div className="modal-header" style={{
+                background: headerBg,
+                borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
+                padding: 'var(--space-xl) var(--space-lg)'
+            }}>
+                <div style={{ fontSize: '3rem', marginBottom: 'var(--space-md)' }}>{icon}</div>
+                <h3 style={{ color: 'white', margin: 0 }}>{title}</h3>
+            </div>
+
+            <div className="modal-body" style={{ padding: 'var(--space-xl)' }}>
+                <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem', lineHeight: '1.5' }}>
+                    {message}
+                </p>
+            </div>
+
+            <div className="modal-footer" style={{ justifyContent: 'center', padding: 'var(--space-lg)' }}>
+                <button className="btn btn-primary" onClick={onClose} style={{ minWidth: '120px' }}>
+                    Entendido
+                </button>
             </div>
         </div>
     );

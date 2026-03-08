@@ -84,7 +84,8 @@ function App() {
       setSaveStatus('saved');
     } catch (e) {
       setSaveStatus('unsaved');
-      alert('Error al guardar el equipo');
+      setEditItem({ title: 'Error de Guardado', message: 'No se pudo guardar la configuración del equipo. Intentá de nuevo.', type: 'error' } as any);
+      setModalType('info');
     }
   }, []);
 
@@ -180,6 +181,30 @@ function App() {
     }
   }, [data.games]);
 
+  const handleShowAddGame = useCallback(() => {
+    if (!activeTournament) {
+      if (filteredTournaments.length === 0) {
+        setEditItem({
+          title: 'Faltan Eventos',
+          message: 'Para registrar un partido, primero debes crear un Evento o Torneo al cual pertenezca.',
+          type: 'warning'
+        } as any);
+        setModalType('info');
+      } else {
+        setEditItem({
+          title: 'Seleccioná un Evento',
+          message: 'Por favor, seleccioná un Torneo de la lista para poder agregar partidos al mismo.',
+          type: 'info'
+        } as any);
+        setModalType('info');
+        setActiveTab('tournaments');
+      }
+      return;
+    }
+    setEditItem(null);
+    setModalType('game');
+  }, [activeTournament, filteredTournaments.length]);
+
   const handleConfirmDeleteGame = useCallback(async (id: string) => {
     const newData = await deleteGame(id);
     setData(newData);
@@ -195,7 +220,8 @@ function App() {
       setModalType('import_success');
       setPendingImport(null);
     } catch (e) {
-      alert('Error al importar los datos');
+      setEditItem({ title: 'Error de Importación', message: 'No se pudieron importar los datos. El formato podría ser incorrecto.', type: 'error' } as any);
+      setModalType('info');
     }
   }, []);
 
@@ -249,7 +275,8 @@ function App() {
             const importedData = JSON.parse(text);
             await handleImportData(importedData);
           } catch (err) {
-            alert('Archivo JSON inválido');
+            setEditItem({ title: 'Archivo Inválido', message: 'El archivo seleccionado no es un respaldo JSON válido.', type: 'error' } as any);
+            setModalType('info');
           }
         };
         input.click();
@@ -257,7 +284,8 @@ function App() {
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         console.error('Failed to load file:', err);
-        alert('Error al cargar el archivo: ' + err.message);
+        setEditItem({ title: 'Error de Carga', message: 'Hubo un problema al leer el archivo seleccionado: ' + err.message, type: 'error' } as any);
+        setModalType('info');
       }
     }
   };
@@ -314,6 +342,10 @@ function App() {
           onDeleteTeam={(team) => handleDeleteTeam(team.id)}
           onImportData={handleImportData}
           onOpenHelp={() => setModalType('help')}
+          onError={(title, message) => {
+            setEditItem({ title, message, type: 'error' } as any);
+            setModalType('info');
+          }}
           currentStep={currentStep}
           onStepClick={handleStepClick}
         />
@@ -415,7 +447,7 @@ function App() {
             onSetActiveTab={setActiveTab}
             onSetActiveTournament={setActiveTournament}
             onAddPlayer={() => { setEditItem(null); setModalType('player'); }}
-            onAddGame={() => { setEditItem(null); setModalType('game'); }}
+            onAddGame={handleShowAddGame}
             onAddTournament={() => { setEditItem(null); setModalType('tournament'); }}
             onEditTeam={(t) => { setEditItem(t); setModalType('team'); }}
             onEditPlayer={(p) => { setEditItem(p); setModalType('player'); }}

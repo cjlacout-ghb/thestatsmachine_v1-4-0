@@ -106,6 +106,5 @@ const triggerDownload = (
     } catch (e) {
         // Fallback — mirrors the doc.save() fallback in pdfGenerator
         console.error('[fileDownloader] Download failed:', e);
-        alert(`Could not download ${filename}. Please try again.`);
     }
 };
