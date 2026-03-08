@@ -15,6 +15,22 @@ export function Sidebar({ activeTab, setActiveTab, activeTeam, activeTournament,
 
     return (
         <aside className="app-sidebar">
+            {/* PROMINENT ENTRY POINT */}
+            <div className="sidebar-group" style={{ marginBottom: '0' }}>
+                <h3 className="sidebar-header" style={{
+                    color: 'var(--accent-primary)',
+                    fontSize: '0.9rem',
+                    fontWeight: '900',
+                    borderLeft: '4px solid var(--accent-primary)',
+                    paddingLeft: '8px',
+                    marginBottom: '0'
+                }}>
+                    ZONA DE CARGA
+                </h3>
+            </div>
+
+            <div className="sidebar-divider"></div>
+
             {/* TEAM SECTION */}
             <div className="sidebar-group">
                 <h3 className="sidebar-header">EQUIPO</h3>
@@ -31,33 +47,19 @@ export function Sidebar({ activeTab, setActiveTab, activeTeam, activeTournament,
                         onClick={() => { onExitTournament(); setActiveTab('players'); }}
                     >
                         <span className="icon">👥</span>
-                        <span>Plantel</span>
+                        <span>Jugadores</span>
                     </button>
                     <button
                         className={`sidebar-item ${activeTab === 'stats' && !activeTournament ? 'active' : ''}`}
                         onClick={() => { onExitTournament(); setActiveTab('stats'); }}
                     >
                         <span className="icon">📊</span>
-                        <span>Stats de Temporada</span>
+                        <span>Estadísticas</span>
                     </button>
                 </nav>
             </div>
 
             <div className="sidebar-divider"></div>
-
-            {/* PROMINENT ENTRY POINT */}
-            <div className="sidebar-group" style={{ marginBottom: 'var(--space-md)' }}>
-                <h3 className="sidebar-header" style={{
-                    color: 'var(--accent-primary)',
-                    fontSize: '0.9rem',
-                    fontWeight: '900',
-                    borderLeft: '4px solid var(--accent-primary)',
-                    paddingLeft: '8px',
-                    marginBottom: '0'
-                }}>
-                    ZONA DE CARGA
-                </h3>
-            </div>
 
             {/* EVENTS SECTION */}
             <div className="sidebar-group">

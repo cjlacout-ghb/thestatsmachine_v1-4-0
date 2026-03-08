@@ -79,10 +79,6 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                         </div>
 
                         <div className="card text-center setup-card-primary">
-                            <h2 className="setup-card-title">Comenzar</h2>
-                            <p className="setup-card-text">
-                                Creá tu primera organización de equipo o importá tus datos existentes para comenzar.
-                            </p>
                             <div style={{ display: 'flex', gap: 'var(--space-md)', justifyContent: 'center' }}>
                                 <button
                                     className="btn btn-hero-primary"
@@ -148,7 +144,7 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                                         <h3 className="team-name">{team.name}</h3>
                                         <p className="team-desc">{team.description || 'Sin descripción.'}</p>
                                         <div className="team-meta">
-                                            <span className="meta-badge">{teamTournaments.length} Eventos</span>
+                                            <span className="meta-badge">{teamTournaments.length} Torneos</span>
                                             <span className="meta-badge">{teamGames.length} Partidos</span>
                                         </div>
                                     </div>
@@ -187,7 +183,7 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                             <div className="team-card-icon">+</div>
                             <div className="team-card-info">
                                 <h3 className="team-name">Agregar Equipo</h3>
-                                <p className="team-desc">Registrá otro equipo u organización.</p>
+                                <p className="team-desc">Registrá otro equipo.</p>
                             </div>
                         </div>
                     </div>

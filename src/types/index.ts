@@ -32,9 +32,11 @@ export interface Game {
     id: string;
     tournamentId: string;
     date: string;
+    teamName: string; // The team that owns this specific record
     opponent: string;
     homeAway: 'home' | 'away';
     gameType: 'regular' | 'playoff' | 'championship' | 'friendly';
+    condition: 'REGULAR' | 'EXTRA INNINGS' | 'RUN-AHEAD RULE';
     teamScore: number;
     opponentScore: number;
     inningsPlayed?: number;

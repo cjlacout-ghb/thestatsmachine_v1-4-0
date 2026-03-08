@@ -305,13 +305,13 @@ export function TeamTab({ games, players, team, onAddGame, onAddPlayer, onManage
                                 <div className="logo-icon" style={{ borderRadius: '50%', width: '40px', height: '40px', fontSize: '16px', background: 'var(--brand-blue-soft)', color: 'var(--brand-blue)', boxShadow: 'none' }}>🏃</div>
                                 <div>
                                     <p className="text-bold" style={{ fontSize: '0.875rem' }}>Agregar Nuevo Jugador</p>
-                                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Agregar jugador al plantel</p>
+                                    <p className="text-muted" style={{ fontSize: '0.75rem' }}>Agregar nuevo jugador</p>
                                 </div>
                             </div>
                             <div className="player-card" onClick={onManageRoster} style={{ padding: 'var(--space-md)', flexDirection: 'row', textAlign: 'left', cursor: 'pointer' }}>
                                 <div className="logo-icon" style={{ borderRadius: '50%', width: '40px', height: '40px', fontSize: '16px', background: 'var(--accent-soft)', color: 'var(--accent-primary)', boxShadow: 'none' }}>👥</div>
                                 <div>
-                                    <p className="text-bold" style={{ fontSize: '0.875rem' }}>Gestión del Plantel</p>
+                                    <p className="text-bold" style={{ fontSize: '0.875rem' }}>Gestión de Jugadores</p>
                                     <p className="text-muted" style={{ fontSize: '0.75rem' }}>Editar datos de jugadores</p>
                                 </div>
                             </div>

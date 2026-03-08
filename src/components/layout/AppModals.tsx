@@ -8,7 +8,7 @@ import { PlayerStatsModal } from '../forms/PlayerStatsModal';
 import { resetDatabase } from '../../lib/storage';
 
 
-export type ModalType = 'team' | 'tournament' | 'player' | 'game' | 'erase' | 'help' | 'player_stats' | 'delete_team' | null;
+export type ModalType = 'team' | 'tournament' | 'player' | 'game' | 'erase' | 'help' | 'player_stats' | 'delete_team' | 'delete_player' | 'delete_tournament' | 'delete_game' | 'import_success' | 'import_confirm' | null;
 
 interface AppModalsProps {
     modalType: ModalType;
@@ -24,8 +24,10 @@ interface AppModalsProps {
     onSaveGameStats: (gameId: string, stats: PlayerGameStats[]) => void;
     onDeletePlayer?: (id: string) => void;
     onDeleteGame?: (id: string) => void;
+    onDeleteTournamentConfirm?: (id: string) => void;
     onDeleteTeamConfirm?: (id: string) => void;
     onBulkImportPlayers: (players: Player[]) => void;
+    onConfirmImport?: () => void;
 }
 
 export function AppModals({
@@ -42,8 +44,10 @@ export function AppModals({
     onSaveGameStats,
     onDeletePlayer,
     onDeleteGame,
+    onDeleteTournamentConfirm,
     onDeleteTeamConfirm,
     onBulkImportPlayers,
+    onConfirmImport,
 }: AppModalsProps) {
     if (!modalType) return null;
 
@@ -70,6 +74,7 @@ export function AppModals({
                     <PlayerForm
                         player={editItem as Player | undefined}
                         teamId={activeTeam.id}
+                        teamName={activeTeam.name}
                         onSave={onSavePlayer}
                         onCancel={onClose}
                         onBulkImport={onBulkImportPlayers}
@@ -104,16 +109,216 @@ export function AppModals({
                     <HelpModal onClose={onClose} />
                 )}
                 {modalType === 'delete_team' && editItem && (
-                    <DeleteConfirmModal
-                        team={editItem as Team}
+                    <GenericDeleteModal
+                        title="¿Eliminar Equipo?"
+                        message={`¿Estás absolutamente seguro de que quieres eliminar a ${(editItem as Team).name}? Esto borrará todos sus torneos, jugadores y estadísticas para siempre.`}
                         onClose={onClose}
                         onConfirm={() => {
-                            if (onDeleteTeamConfirm) {
-                                onDeleteTeamConfirm((editItem as Team).id);
-                            }
+                            if (onDeleteTeamConfirm) onDeleteTeamConfirm((editItem as Team).id);
                         }}
                     />
                 )}
+                {modalType === 'delete_player' && editItem && (
+                    <GenericDeleteModal
+                        title="¿Eliminar Jugador?"
+                        message={`Confirmá la eliminación permanente de ${(editItem as Player).name}. Sus estadísticas históricas se perderán.`}
+                        onClose={onClose}
+                        onConfirm={() => {
+                            if (onDeletePlayer) onDeletePlayer((editItem as Player).id);
+                        }}
+                    />
+                )}
+                {modalType === 'delete_tournament' && editItem && (
+                    <GenericDeleteModal
+                        title="¿Eliminar Evento?"
+                        message={`¿Confirmás que querés eliminar ${(editItem as Tournament).name}? Se perderán los calendarios y resultados.`}
+                        onClose={onClose}
+                        onConfirm={() => {
+                            if (onDeleteTournamentConfirm) onDeleteTournamentConfirm((editItem as Tournament).id);
+                        }}
+                    />
+                )}
+                {modalType === 'delete_game' && editItem && (
+                    <GenericDeleteModal
+                        title="¿Eliminar Registro?"
+                        message="¿Estás seguro de que quieres borrar este registro de partido? Esta acción no se puede deshacer."
+                        onClose={onClose}
+                        onConfirm={() => {
+                            if (onDeleteGame) onDeleteGame((editItem as Game).id);
+                        }}
+                    />
+                )}
+                {modalType === 'import_success' && (
+                    <ImportSuccessModal
+                        onConfirm={() => {
+                            window.location.reload();
+                        }}
+                    />
+                )}
+                {modalType === 'import_confirm' && (
+                    <ImportConfirmModal
+                        onConfirm={() => {
+                            if (onConfirmImport) onConfirmImport();
+                        }}
+                        onCancel={onClose}
+                    />
+                )}
+            </div>
+        </div>
+    );
+}
+
+// ---------------------------------------------------------------------------
+// GenericDeleteModal — premium replacement for browser confirm()
+// ---------------------------------------------------------------------------
+function GenericDeleteModal({ title, message, onClose, onConfirm }: { title: string, message: string, onClose: () => void, onConfirm: () => void }) {
+    return (
+        <div className="modal-content" style={{ minWidth: '400px', maxWidth: '450px' }}>
+            <div className="modal-header" style={{
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0'
+            }}>
+                <h3 style={{ color: 'white', margin: 0 }}>{title}</h3>
+            </div>
+
+            <div className="modal-body" style={{ padding: 'var(--space-xl)' }}>
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 'var(--space-md)',
+                    textAlign: 'center'
+                }}>
+                    <div style={{ fontSize: '3rem', marginBottom: 'var(--space-sm)' }}>🗑️</div>
+                    <p style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 600 }}>
+                        ¿Estás absolutamente seguro?
+                    </p>
+                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                        {message}
+                    </p>
+                </div>
+            </div>
+
+            <div className="modal-footer" style={{ padding: 'var(--space-lg) var(--space-xl)', background: 'var(--bg-primary)' }}>
+                <button
+                    className="btn btn-secondary"
+                    style={{ flex: 1 }}
+                    onClick={onClose}
+                >
+                    Cancelar
+                </button>
+                <button
+                    className="btn"
+                    style={{
+                        flex: 1,
+                        background: '#dc2626',
+                        color: 'white',
+                        fontWeight: 700,
+                        border: 'none',
+                        boxShadow: '0 2px 8px rgba(220, 38, 38, 0.2)'
+                    }}
+                    onClick={onConfirm}
+                >
+                    Eliminar para Siempre
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// ---------------------------------------------------------------------------
+// ImportConfirmModal — premium confirmation before overwriting data
+// ---------------------------------------------------------------------------
+function ImportConfirmModal({ onConfirm, onCancel }: { onConfirm: () => void, onCancel: () => void }) {
+    return (
+        <div className="modal-content" style={{ minWidth: '400px', maxWidth: '450px', textAlign: 'center', margin: 'auto' }}>
+            <div className="modal-header" style={{
+                background: 'linear-gradient(135deg, var(--avg), #d97706)',
+                borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
+                padding: 'var(--space-xl) var(--space-lg)',
+                flexDirection: 'column'
+            }}>
+                <div style={{ fontSize: '3.5rem', marginBottom: 'var(--space-md)' }}>⚠️</div>
+                <h3 style={{ color: 'white', margin: 0, fontSize: '1.5rem' }}>¿Sobreescribir Datos?</h3>
+                <p style={{ color: 'rgba(255,255,255,0.9)', margin: '8px 0 0 0', fontSize: '0.95rem' }}>
+                    Se detectaron datos existentes en la aplicación.
+                </p>
+            </div>
+
+            <div className="modal-body" style={{ padding: 'var(--space-xl)' }}>
+                <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '1rem' }}>
+                    Si continuas, todos los equipos, jugadores y estadísticas actuales serán <strong>reemplazados</strong> por los del archivo seleccionado.
+                </p>
+            </div>
+
+            <div className="modal-footer" style={{ padding: 'var(--space-lg) var(--space-xl)', gap: 'var(--space-md)' }}>
+                <button
+                    className="btn btn-secondary"
+                    style={{ flex: 1, padding: '12px' }}
+                    onClick={onCancel}
+                >
+                    Cancelar
+                </button>
+                <button
+                    className="btn btn-primary"
+                    style={{
+                        flex: 1,
+                        padding: '12px',
+                        fontSize: '1rem',
+                        fontWeight: 700,
+                        background: 'var(--avg)',
+                        border: 'none',
+                        boxShadow: '0 4px 12px rgba(245, 158, 11, 0.2)'
+                    }}
+                    onClick={onConfirm}
+                >
+                    Confirmar e Importar
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// ---------------------------------------------------------------------------
+// ImportSuccessModal — premium success notification after data import
+// ---------------------------------------------------------------------------
+function ImportSuccessModal({ onConfirm }: { onConfirm: () => void }) {
+    return (
+        <div className="modal-content" style={{ minWidth: '380px', maxWidth: '420px', textAlign: 'center', margin: 'auto' }}>
+            <div className="modal-header" style={{
+                background: 'linear-gradient(135deg, var(--elite), #15803d)',
+                borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
+                padding: 'var(--space-xl) var(--space-lg)',
+                flexDirection: 'column'
+            }}>
+                <div style={{ fontSize: '3.5rem', marginBottom: 'var(--space-md)' }}>🎉</div>
+                <h3 style={{ color: 'white', margin: 0, fontSize: '1.5rem' }}>¡Importación Exitosa!</h3>
+                <p style={{ color: 'rgba(255,255,255,0.9)', margin: '8px 0 0 0', fontSize: '0.95rem' }}>
+                    Tus datos se han cargado correctamente.
+                </p>
+            </div>
+
+            <div className="modal-body" style={{ padding: 'var(--space-xl)' }}>
+                <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '1rem' }}>
+                    La aplicación necesita reiniciarse para aplicar los cambios y cargar tu nueva configuración.
+                </p>
+            </div>
+
+            <div className="modal-footer" style={{ padding: 'var(--space-lg) var(--space-xl)' }}>
+                <button
+                    className="btn btn-primary"
+                    style={{
+                        width: '100%',
+                        padding: '12px',
+                        fontSize: '1rem',
+                        fontWeight: 700,
+                        background: 'var(--elite)',
+                        border: 'none',
+                        boxShadow: '0 4px 12px rgba(21, 128, 61, 0.2)'
+                    }}
+                    onClick={onConfirm}
+                >
+                    Reiniciar Aplicación
+                </button>
             </div>
         </div>
     );
@@ -326,62 +531,4 @@ function HelpModal({ onClose }: { onClose: () => void }) {
     );
 }
 
-// ---------------------------------------------------------------------------
-// DeleteConfirmModal — custom high-fidelity confirmation for team deletion
-// ---------------------------------------------------------------------------
-function DeleteConfirmModal({ team, onClose, onConfirm }: { team: Team, onClose: () => void, onConfirm: () => void }) {
-    return (
-        <div className="modal-content" style={{ minWidth: '400px', maxWidth: '450px' }}>
-            <div className="modal-header" style={{
-                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0'
-            }}>
-                <h3 style={{ color: 'white', margin: 0 }}>¿Eliminar Equipo?</h3>
-                <p style={{ color: 'rgba(255,255,255,0.9)', margin: '4px 0 0 0', fontSize: '0.85rem' }}>
-                    Confirmá la eliminación permanente de <strong>{team.name}</strong>.
-                </p>
-            </div>
 
-            <div className="modal-body" style={{ padding: 'var(--space-xl)' }}>
-                <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 'var(--space-md)',
-                    textAlign: 'center'
-                }}>
-                    <div style={{ fontSize: '3rem', marginBottom: 'var(--space-sm)' }}>🥀</div>
-                    <p style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 600 }}>
-                        ¿Estás absolutamente seguro?
-                    </p>
-                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
-                        Esto eliminará permanentemente este equipo y todos sus torneos, jugadores y registros de rendimiento asociados.
-                    </p>
-                </div>
-            </div>
-
-            <div className="modal-footer" style={{ padding: 'var(--space-lg) var(--space-xl)', background: 'var(--bg-primary)' }}>
-                <button
-                    className="btn btn-secondary"
-                    style={{ flex: 1 }}
-                    onClick={onClose}
-                >
-                    Conservar Equipo
-                </button>
-                <button
-                    className="btn"
-                    style={{
-                        flex: 1,
-                        background: '#dc2626',
-                        color: 'white',
-                        fontWeight: 700,
-                        border: 'none',
-                        boxShadow: '0 2px 8px rgba(220, 38, 38, 0.2)'
-                    }}
-                    onClick={onConfirm}
-                >
-                    Eliminar para Siempre
-                </button>
-            </div>
-        </div>
-    );
-}

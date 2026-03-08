@@ -27,6 +27,7 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
     const [opponentScore, setOpponentScore] = useState(game?.opponentScore ?? 0);
     const [teamInnings, setTeamInnings] = useState(game?.inningsPlayed ?? 7.0);
     const [opponentInnings, setOpponentInnings] = useState(game?.opponentInningsPlayed ?? 7.0);
+    const [condition, setCondition] = useState<Game['condition']>(game?.condition || 'REGULAR');
     const [playerStats, setPlayerStats] = useState<PlayerGameStats[]>(game?.playerStats || []);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -52,9 +53,11 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
             id: game?.id || generateId(),
             tournamentId,
             date,
+            teamName: game?.teamName || teamName, // Persist or set naming
             opponent: opponent.trim(),
             homeAway,
             gameType,
+            condition,
             teamScore,
             opponentScore,
             inningsPlayed: teamInnings,
@@ -148,6 +151,18 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
                                         <option value="playoff">Playoff</option>
                                         <option value="tournament">Tournament</option>
                                         <option value="friendly">Friendly</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Condición del Juego</label>
+                                    <select
+                                        className="form-control"
+                                        value={condition}
+                                        onChange={e => setCondition(e.target.value as Game['condition'])}
+                                    >
+                                        <option value="REGULAR">REGULAR</option>
+                                        <option value="EXTRA INNINGS">EXTRA INNINGS</option>
+                                        <option value="RUN-AHEAD RULE">RUN-AHEAD RULE (MERCY)</option>
                                     </select>
                                 </div>
                                 <div className="form-group">

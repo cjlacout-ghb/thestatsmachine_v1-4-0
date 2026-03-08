@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { AppData, Team, Tournament, Player, Game, TabId } from './types';
-import { loadData, saveData, saveTeam, deleteTeam, saveTournament, savePlayer, saveGame, deleteTournament, deletePlayer, deleteGame, storageManager, LocalStorageDriver } from './lib/storage';
+import { loadData, saveData, saveTeam, deleteTeam, saveTournament, savePlayer, saveGame, deleteTournament, deletePlayer, deleteGame, storageManager, MemoryDriver } from './lib/storage';
 import { saveJSONWithDialog } from './lib/fileDownloader';
 
 import { TeamsHub } from './components/ui/TeamsHub';
@@ -22,7 +22,8 @@ function App() {
 
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
-  const [showMigrationBanner, setShowMigrationBanner] = useState(false);
+
+  const [pendingImport, setPendingImport] = useState<AppData | null>(null);
 
   // Initialize and Load data
   useEffect(() => {
@@ -31,25 +32,7 @@ function App() {
       const stored = await storageManager.load();
       setData(stored);
 
-      // Check for legacy migration
-      const hasLegacy = await storageManager.hasLegacyData();
-      if (hasLegacy) setShowMigrationBanner(true);
-
-      // Restore session context
-      const savedTeamId = localStorage.getItem('tsm_active_team');
-      if (savedTeamId) {
-        const team = stored.teams.find(t => t.id === savedTeamId);
-        if (team) {
-          setActiveTeam(team);
-          const savedTourneyId = localStorage.getItem('tsm_active_tournament');
-          if (savedTourneyId) {
-            const tourney = stored.tournaments.find(t => t.id === savedTourneyId);
-            if (tourney && tourney.participatingTeamIds?.includes(team.id)) {
-              setActiveTournament(tourney);
-            }
-          }
-        }
-      }
+      // Session context is not restored from localStorage to avoid any browser cache trace.
     };
     initApp();
 
@@ -58,13 +41,9 @@ function App() {
     return () => window.removeEventListener('tsm:data-saved' as any, handleSaved);
   }, []);
 
-  // Sync session choices to local storage (metadata only)
+  // Session choices are not synced to local storage.
   useEffect(() => {
-    if (activeTeam) localStorage.setItem('tsm_active_team', activeTeam.id);
-    else localStorage.removeItem('tsm_active_team');
-
-    if (activeTournament) localStorage.setItem('tsm_active_tournament', activeTournament.id);
-    else localStorage.removeItem('tsm_active_tournament');
+    // Session is transient.
   }, [activeTeam, activeTournament]);
 
   // Derived data
@@ -109,14 +88,22 @@ function App() {
     }
   }, []);
 
-  const handleDeleteTeam = useCallback(async (id: string) => {
-    if (confirm('¿Eliminar este equipo y todos sus datos asociados?')) {
-      const newData = await deleteTeam(id);
-      setData(newData);
-      if (activeTeam?.id === id) {
-        setActiveTeam(null);
-        setActiveTournament(null);
-      }
+  const handleDeleteTeam = useCallback((id: string) => {
+    const team = data.teams.find(t => t.id === id);
+    if (team) {
+      setEditItem(team);
+      setModalType('delete_team');
+    }
+  }, [data.teams]);
+
+  const handleConfirmDeleteTeam = useCallback(async (id: string) => {
+    const newData = await deleteTeam(id);
+    setData(newData);
+    setModalType(null);
+    setEditItem(null);
+    if (activeTeam?.id === id) {
+      setActiveTeam(null);
+      setActiveTournament(null);
     }
   }, [activeTeam]);
 
@@ -130,13 +117,21 @@ function App() {
     setSaveStatus('saved');
   }, []);
 
-  const handleDeleteTournament = useCallback(async (id: string) => {
-    if (confirm('¿Eliminar este evento?')) {
-      const newData = await deleteTournament(id);
-      setData(newData);
-      if (activeTournament?.id === id) {
-        setActiveTournament(null);
-      }
+  const handleDeleteTournament = useCallback((id: string) => {
+    const tourney = data.tournaments.find(t => t.id === id);
+    if (tourney) {
+      setEditItem(tourney);
+      setModalType('delete_tournament');
+    }
+  }, [data.tournaments]);
+
+  const handleConfirmDeleteTournament = useCallback(async (id: string) => {
+    const newData = await deleteTournament(id);
+    setData(newData);
+    setModalType(null);
+    setEditItem(null);
+    if (activeTournament?.id === id) {
+      setActiveTournament(null);
     }
   }, [activeTournament]);
 
@@ -162,33 +157,56 @@ function App() {
     setEditItem(null);
   }, []);
 
-  const handleDeletePlayer = useCallback(async (id: string) => {
-    if (confirm('¿Eliminar este jugador?')) {
-      const newData = await deletePlayer(id);
-      setData(newData);
+  const handleDeletePlayer = useCallback((id: string) => {
+    const player = data.players.find(p => p.id === id);
+    if (player) {
+      setEditItem(player);
+      setModalType('delete_player');
     }
+  }, [data.players]);
+
+  const handleConfirmDeletePlayer = useCallback(async (id: string) => {
+    const newData = await deletePlayer(id);
+    setData(newData);
+    setModalType(null);
+    setEditItem(null);
   }, []);
 
-  const handleDeleteGame = useCallback(async (id: string) => {
-    if (confirm('¿Eliminar este registro de partido?')) {
-      const newData = await deleteGame(id);
-      setData(newData);
+  const handleDeleteGame = useCallback((id: string) => {
+    const game = data.games.find(g => g.id === id);
+    if (game) {
+      setEditItem(game);
+      setModalType('delete_game');
+    }
+  }, [data.games]);
+
+  const handleConfirmDeleteGame = useCallback(async (id: string) => {
+    const newData = await deleteGame(id);
+    setData(newData);
+    setModalType(null);
+    setEditItem(null);
+  }, []);
+
+  const executeImport = useCallback(async (imported: AppData) => {
+    try {
+      await storageManager.setDriver(new MemoryDriver());
+      await saveData(imported);
+      setData(imported);
+      setModalType('import_success');
+      setPendingImport(null);
+    } catch (e) {
+      alert('Error al importar los datos');
     }
   }, []);
 
   const handleImportData = useCallback(async (imported: AppData) => {
-    if (data.teams.length > 0 && !confirm('¿Sobreescribir todos los datos actuales?')) return;
-
-    try {
-      await storageManager.setDriver(new LocalStorageDriver());
-      await saveData(imported);
-      setData(imported);
-      alert('¡Importación exitosa! La aplicación se reiniciará.');
-      window.location.reload();
-    } catch (e) {
-      alert('Error al importar los datos');
+    if (data.teams.length > 0) {
+      setPendingImport(imported);
+      setModalType('import_confirm');
+      return;
     }
-  }, [data]);
+    await executeImport(imported);
+  }, [data, executeImport]);
 
   const onSaveToDisk = async () => {
     try {
@@ -214,6 +232,10 @@ function App() {
         const file = await fileHandle.getFile();
         const text = await file.text();
         const importedData = JSON.parse(text);
+
+        // When importing, if we are in environment that supports FileSystem API, 
+        // we keep the driver as FileSystem if the user chosen a file, but here it is a "Load" operation.
+        // For simplicity, we set it to MemoryDriver and then user can "Save" to a file.
         await handleImportData(importedData);
       } else {
         const input = document.createElement('input');
@@ -311,6 +333,9 @@ function App() {
           onDeleteTeamConfirm={handleDeleteTeam}
           onBulkImportPlayers={handleBulkImportPlayers}
           onSaveGameStats={() => { }}
+          onConfirmImport={() => {
+            if (pendingImport) executeImport(pendingImport);
+          }}
         />
       </div>
     );
@@ -330,12 +355,7 @@ function App() {
         onOpenErase={() => setModalType('erase')}
       />
 
-      {showMigrationBanner && (
-        <div className="banner warning" style={{ textAlign: 'center', padding: '12px' }}>
-          ⚠️ Estás usando el almacenamiento del navegador. [Haz clic aquí] para migrar a un archivo local con mayor seguridad.
-          <button onClick={() => setShowMigrationBanner(false)} className="btn-link" style={{ marginLeft: '12px' }}>Descartar</button>
-        </div>
-      )}
+
 
       <div className="app-container">
         <Sidebar
@@ -355,23 +375,32 @@ function App() {
         />
 
         <main className="app-content">
-          <HierarchyStepper
-            currentStep={currentStep}
-            onStepClick={handleStepClick}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-xl)', gap: 'var(--space-lg)' }}>
+            <div className="pro-team-badge" onClick={() => { setEditItem(activeTeam); setModalType('team'); }} style={{ margin: 0 }}>
+              <span className="label">EQUIPO OFICIAL</span>
+              <span className="name">{activeTeam?.name}</span>
+            </div>
+
+            <HierarchyStepper
+              currentStep={currentStep}
+              onStepClick={handleStepClick}
+            />
+
+            {activeTournament ? (
+              <div className="identity-badge" onClick={() => { setEditItem(activeTournament); setModalType('tournament'); }} style={{ borderColor: 'var(--avg)', margin: 0 }}>
+                🏆 {activeTournament.name}
+              </div>
+            ) : <div style={{ width: '240px' }} />}
+          </div>
 
           <div className="dash-header-bar">
-            <h2 className="text-bold">{activeTab.toUpperCase()}</h2>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <div className="identity-badge" onClick={() => { setEditItem(activeTeam); setModalType('team'); }}>
-                🥎 {activeTeam?.name}
-              </div>
-              {activeTournament && (
-                <div className="identity-badge" onClick={() => { setEditItem(activeTournament); setModalType('tournament'); }} style={{ borderColor: 'var(--avg)' }}>
-                  🏆 {activeTournament.name}
-                </div>
-              )}
-            </div>
+            <h2 className="text-bold">
+              {activeTab === 'players' ? 'JUGADORES' :
+                activeTab === 'team' ? 'EQUIPO' :
+                  activeTab === 'stats' ? 'ESTADÍSTICAS' :
+                    activeTab === 'tournaments' ? 'TORNEOS' :
+                      'PARTIDOS'}
+            </h2>
           </div>
 
           <AppContent
@@ -412,11 +441,15 @@ function App() {
             onSaveTournament={handleSaveTournament}
             onSavePlayer={handleSavePlayer}
             onSaveGame={handleSaveGame}
-            onDeletePlayer={handleDeletePlayer}
-            onDeleteGame={handleDeleteGame}
-            onDeleteTeamConfirm={handleDeleteTeam}
+            onDeletePlayer={handleConfirmDeletePlayer}
+            onDeleteGame={handleConfirmDeleteGame}
+            onDeleteTournamentConfirm={handleConfirmDeleteTournament}
+            onDeleteTeamConfirm={handleConfirmDeleteTeam}
             onBulkImportPlayers={handleBulkImportPlayers}
             onSaveGameStats={() => { }}
+            onConfirmImport={() => {
+              if (pendingImport) executeImport(pendingImport);
+            }}
           />
         </main>
       </div>

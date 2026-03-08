@@ -1,20 +1,21 @@
 import { useState, useRef } from 'react';
 import type { Player, Position } from '../../types';
 import { generateId, parsePlayerImport } from '../../lib/storage';
-import { downloadCSVTemplate, downloadTXTTemplate } from '../../lib/fileDownloader';
+
 
 const POSITIONS: Position[] = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DP', 'FLEX'];
 
 interface PlayerFormProps {
     player?: Player;
     teamId: string;
+    teamName: string;
     onSave: (player: Player) => void;
     onCancel: () => void;
     onBulkImport?: (players: Player[]) => void;
     onDelete?: () => void;
 }
 
-export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onDelete }: PlayerFormProps) {
+export function PlayerForm({ player, teamId, teamName, onSave, onCancel, onBulkImport, onDelete }: PlayerFormProps) {
     const [name, setName] = useState(player?.name || '');
     const [jerseyNumber, setJerseyNumber] = useState(player?.jerseyNumber || '');
     const [primaryPosition, setPrimaryPosition] = useState<Position>(player?.primaryPosition || 'DP');
@@ -62,25 +63,34 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
         const reader = new FileReader();
         reader.onload = (ev) => {
             const text = ev.target?.result as string;
-            setImportText(text);
+            const players = parsePlayerImport(text, teamId);
+            if (players.length > 0 && onBulkImport) {
+                onBulkImport(players);
+                setShowImport(false);
+                setImportText('');
+            }
         };
         reader.readAsText(file);
     };
 
 
-    const handleImport = () => {
-        const players = parsePlayerImport(importText, teamId);
-        if (players.length > 0 && onBulkImport) {
-            onBulkImport(players);
-            setShowImport(false);
-            setImportText('');
-        }
-    };
+
 
     if (showImport) {
         return (
             <div className="modal-content">
                 <div className="modal-header">
+                    <span style={{
+                        fontSize: '0.7rem',
+                        fontWeight: 900,
+                        color: 'rgba(255,255,255,0.9)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.15em',
+                        display: 'block',
+                        marginBottom: '4px'
+                    }}>
+                        {teamName}
+                    </span>
                     <h3>Importación Masiva de Jugadores</h3>
                     <p>Cargá un CSV/TXT o pegá los datos de tu portal de liga</p>
                 </div>
@@ -100,19 +110,12 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
                                 Seleccionar Archivo CSV o TXT
                             </button>
                             <p className="text-muted mt-sm" style={{ fontSize: '0.75rem' }}>Formato: Nombre, Número#, Posición (uno por línea)</p>
-                            <div style={{ display: 'flex', gap: 'var(--space-md)', marginTop: 'var(--space-md)', justifyContent: 'center' }}>
-                                <button type="button" className="btn btn-ghost btn-sm" onClick={downloadCSVTemplate} style={{ color: 'var(--primary-color)' }}>
-                                    📥 Descargar Plantilla (.csv)
-                                </button>
-                                <button type="button" className="btn btn-ghost btn-sm" onClick={downloadTXTTemplate} style={{ color: 'var(--primary-color)' }}>
-                                    📥 Descargar Plantilla (.txt)
-                                </button>
-                            </div>
+
                         </div>
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">O Pegá los Datos del Plantel</label>
+                        <label className="form-label">O Pegá los Datos de los Jugadores</label>
                         <textarea
                             className="form-control"
                             value={importText}
@@ -123,18 +126,25 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
                     </div>
                 </div>
 
-                <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" onClick={() => setShowImport(false)} style={{ flex: 1 }}>
+                <div className="modal-footer" style={{ justifyContent: 'center', gap: 'var(--space-md)' }}>
+                    <button type="button" className="btn btn-secondary" onClick={() => setShowImport(false)} style={{ minWidth: '140px' }}>
                         Volver
                     </button>
                     <button
                         type="button"
                         className="btn btn-primary"
-                        onClick={handleImport}
+                        onClick={() => {
+                            const players = parsePlayerImport(importText, teamId);
+                            if (players.length > 0 && onBulkImport) {
+                                onBulkImport(players);
+                                setShowImport(false);
+                                setImportText('');
+                            }
+                        }}
                         disabled={!importText.trim()}
-                        style={{ flex: 2 }}
+                        style={{ minWidth: '200px' }}
                     >
-                        Importar {importText ? parsePlayerImport(importText, teamId).length : ''} Jugadores
+                        Importar {importText.trim() ? `${parsePlayerImport(importText, teamId).length} ` : ''}Jugadores
                     </button>
                 </div>
             </div>
@@ -145,11 +155,33 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
         <div className="modal-content">
             <div className="modal-header" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
+                    <span style={{
+                        fontSize: '0.7rem',
+                        fontWeight: 900,
+                        color: 'rgba(255,255,255,0.9)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.15em',
+                        display: 'block',
+                        marginBottom: '4px'
+                    }}>
+                        {teamName}
+                    </span>
                     <h3>{player ? 'Editar' : 'Agregar Nuevo'} Jugador</h3>
-                    <p>Ingresá los datos individuales del jugador para el seguimiento</p>
+                    <p>Ingresá los datos individuales del jugador</p>
                 </div>
                 {!player && onBulkImport && (
-                    <button type="button" className="btn btn-ghost" onClick={() => setShowImport(true)} style={{ color: 'white' }}>
+                    <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => setShowImport(true)}
+                        style={{
+                            color: 'white',
+                            border: '1px solid rgba(255, 255, 255, 0.4)',
+                            padding: '6px 16px',
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            borderRadius: 'var(--radius-md)'
+                        }}
+                    >
                         Importación Masiva
                     </button>
                 )}
@@ -241,7 +273,7 @@ export function PlayerForm({ player, teamId, onSave, onCancel, onBulkImport, onD
                         Descartar
                     </button>
                     <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>
-                        {player ? 'Guardar Perfil' : 'Agregar al Plantel'}
+                        {player ? 'Guardar Perfil' : 'Agregar'}
                     </button>
                 </div>
             </form>

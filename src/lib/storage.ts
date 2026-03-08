@@ -1,12 +1,12 @@
 import type { AppData, Team, Tournament, Player, Game } from '../types';
 
 /**
- * 🥎 THE STATS MACHINE - ADVANCED STORAGE SYSTEM
- * Dual-driver architecture: LocalStorage + File System Access API
+ * 🥎 THE STATS MACHINE - DIRECT FILE STORAGE SYSTEM
+ * Native File System Access API only. No persistent browser cache.
  */
 
 export const STORAGE_KEY = 'stats_app_data';
-const DRIVER_PREF_KEY = 'tsm_storage_driver';
+
 
 const DEFAULT_DATA: AppData = {
     teams: [],
@@ -16,46 +16,52 @@ const DEFAULT_DATA: AppData = {
 };
 
 export interface StorageDriver {
-    type: 'local' | 'file';
+    type: 'file';
     load(): Promise<AppData>;
     save(data: AppData): Promise<void>;
 }
 
-export class LocalStorageDriver implements StorageDriver {
-    type = 'local' as const;
+export class MemoryDriver implements StorageDriver {
+    type = 'file' as const;
+    private data: AppData = { ...DEFAULT_DATA };
 
     async load(): Promise<AppData> {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (!stored) return DEFAULT_DATA;
-        try {
-            const parsed = JSON.parse(stored);
-            return this.validate(parsed);
-        } catch (e) {
-            console.error('Local load failed:', e);
-            return DEFAULT_DATA;
-        }
+        return this.data;
     }
 
     async save(data: AppData): Promise<void> {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        this.data = data;
+    }
+}
+
+export class FileSystemDriver implements StorageDriver {
+    type = 'file' as const;
+    private handle: FileSystemFileHandle;
+
+    constructor(handle: FileSystemFileHandle) {
+        this.handle = handle;
     }
 
-    private validate(data: any): AppData {
-        return {
-            teams: Array.isArray(data.teams) ? data.teams : [],
-            tournaments: Array.isArray(data.tournaments) ? data.tournaments : [],
-            players: Array.isArray(data.players) ? data.players : [],
-            games: Array.isArray(data.games) ? data.games : []
-        };
+    async load(): Promise<AppData> {
+        const file = await this.handle.getFile();
+        const text = await file.text();
+        return JSON.parse(text);
+    }
+
+    async save(data: AppData): Promise<void> {
+        const writable = await this.handle.createWritable();
+        await writable.write(JSON.stringify(data, null, 2));
+        await writable.close();
     }
 }
 
 class StorageManager {
-    private driver: StorageDriver = new LocalStorageDriver();
+    private driver: StorageDriver = new MemoryDriver();
+
 
     async init() {
-        // Initializing with LocalStorageDriver by default for now.
-        this.driver = new LocalStorageDriver();
+        // We start with MemoryDriver. Data is lost on refresh unless imported/saved to file.
+        this.driver = new MemoryDriver();
     }
 
     getDriver() {
@@ -64,7 +70,13 @@ class StorageManager {
 
     setDriver(driver: StorageDriver) {
         this.driver = driver;
-        localStorage.setItem(DRIVER_PREF_KEY, driver.type);
+        if (driver instanceof FileSystemDriver) {
+            // Keep track if we are using a real file
+        }
+    }
+
+    isFileActive(): boolean {
+        return this.driver instanceof FileSystemDriver;
     }
 
     async hasLegacyData(): Promise<boolean> {
@@ -78,12 +90,14 @@ class StorageManager {
 
     async save(data: AppData): Promise<void> {
         await this.driver.save(data);
-        if (this.driver.type === 'file') {
-            localStorage.setItem(STORAGE_KEY + '_mirror', JSON.stringify(data));
+
+        // Dispatch event only if it's a real file save or meaningful change
+        // But the requirement is: "don't show saved if never saved to PC"
+        if (this.isFileActive()) {
+            window.dispatchEvent(new CustomEvent('tsm:data-saved', {
+                detail: { timestamp: new Date() }
+            }));
         }
-        window.dispatchEvent(new CustomEvent('tsm:data-saved', {
-            detail: { timestamp: new Date() }
-        }));
     }
 }
 
@@ -184,11 +198,7 @@ export async function deleteGame(id: string) {
 }
 
 export async function resetDatabase() {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(STORAGE_KEY + '_mirror');
-    localStorage.removeItem(DRIVER_PREF_KEY);
-    localStorage.removeItem('tsm_active_team');
-    localStorage.removeItem('tsm_active_tournament');
+    // Only memory exists now
     window.location.reload();
 }
 

@@ -148,7 +148,7 @@ export function PlayersTab({ players, games, onSelectPlayer, onAddPlayer, highli
                             </table>
                         </div>
                         <div className="modal-footer" style={{ borderTop: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-md) var(--space-xl)' }}>
-                            <span className="text-muted" style={{ fontSize: '0.75rem' }}>Mostrando {players.length} jugadores del plantel</span>
+                            <span className="text-muted" style={{ fontSize: '0.75rem' }}>Mostrando {players.length} jugadores</span>
                             <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
                                 <button className="btn btn-secondary" style={{ padding: '4px 12px', fontSize: '0.75rem' }}>Ant.</button>
                                 <button className="btn btn-secondary" style={{ padding: '4px 12px', fontSize: '0.75rem' }}>Sig.</button>

@@ -1,7 +1,7 @@
 import type { Game, Player, Tournament } from '../../types';
 import { EmptyState } from '../ui/EmptyState';
 import { getMonthStr, getDayStr } from '../../lib/dateUtils';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 interface GamesTabProps {
     games: Game[];
@@ -16,7 +16,7 @@ interface GamesTabProps {
     highlightedItemId?: string | null;
 }
 
-export function GamesTab({ games, players, tournament: _tournament, onSelectGame, onAddGame, onEditTournament: _onEditTournament, onDeleteTournament: _onDeleteTournament, onOpenPlayerStats, teamName = 'Team', highlightedItemId }: GamesTabProps) {
+export function GamesTab({ games, tournament: _tournament, onSelectGame, onAddGame, onEditTournament: _onEditTournament, onDeleteTournament: _onDeleteTournament, onOpenPlayerStats, teamName = 'Team', highlightedItemId }: GamesTabProps) {
     if (games.length === 0) {
         return (
             <div className="dash-content">
@@ -34,26 +34,39 @@ export function GamesTab({ games, players, tournament: _tournament, onSelectGame
         );
     }
 
-    const getPlayerName = (id: string) =>
-        players.find(p => p.id === id)?.name || 'Desconocido';
+    // ─── Deduplication & Sorting [R-10] ──────────────────────────────────────
+    const uniqueGames = useMemo(() => {
+        const seen = new Map<string, Game>();
 
-    // Sort games by date ascending (old to new)
-    const sortedGames = [...games].sort((a, b) =>
-        new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+        games.forEach(g => {
+            // Use canonical key: Date + Event + Teams (Sorted) + Scores (Sorted)
+            const subject = (g.teamName || teamName).trim().toUpperCase();
+            const opponent = g.opponent.trim().toUpperCase();
+            const sortedTeams = [subject, opponent].sort();
+            const sortedScores = [g.teamScore, g.opponentScore].sort();
+
+            // Note: tournament context is assumed from props or tournamentId
+            const key = `${g.date}|${sortedTeams.join('-')}|${sortedScores.join('-')}`;
+
+            // Prefer records with playerStats if duplicates exist
+            if (!seen.has(key) || (g.playerStats?.length > 0 && seen.get(key)!.playerStats?.length === 0)) {
+                seen.set(key, g);
+            }
+        });
+
+        return Array.from(seen.values()).sort((a, b) =>
+            new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+    }, [games, teamName]);
 
     useEffect(() => {
         if (highlightedItemId) {
             const el = document.getElementById(`game-card-${highlightedItemId}`);
             if (el) {
                 el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                // Add a brief highlight flash
                 el.style.transition = 'background-color 0.5s ease-out';
-                const originalBg = el.style.backgroundColor;
                 el.style.backgroundColor = 'var(--bg-card-hover)';
-                setTimeout(() => {
-                    el.style.backgroundColor = originalBg;
-                }, 1500);
+                setTimeout(() => { el.style.backgroundColor = ''; }, 1500);
             }
         }
     }, [highlightedItemId]);
@@ -61,25 +74,31 @@ export function GamesTab({ games, players, tournament: _tournament, onSelectGame
     return (
         <div className="dash-content">
             <div style={{ display: 'grid', gap: 'var(--space-lg)' }}>
-                {sortedGames.map(game => {
+                {uniqueGames.map((game: Game) => {
+                    // [R-12] Subject of the record is game.teamName, not the UI context teamName
+                    const recordSubject = (game.teamName || teamName);
                     const isWin = game.teamScore > game.opponentScore;
                     const isLoss = game.teamScore < game.opponentScore;
 
-                    // Top performers logic
-                    const topBatter = game.playerStats.length > 0 ? game.playerStats.reduce((best, ps) =>
-                        ps.h > (best?.h || 0) ? ps : best, game.playerStats[0]) : null;
+                    // Labels must be relative to the record itself to avoid "A @ A" errors
+                    const visitorTeam = game.homeAway === 'away' ? recordSubject : game.opponent;
+                    const homeTeam = game.homeAway === 'home' ? recordSubject : game.opponent;
+
+                    // UI Highlighting relative to context (if desired)
+
+                    const statusLabel = isWin ? 'GANA' : isLoss ? 'PIERDE' : 'EMPATE';
 
                     return (
                         <div
                             id={`game-card-${game.id}`}
                             key={game.id}
-                            className="card"
+                            className={`card ${highlightedItemId === game.id ? 'highlighted' : ''}`}
                             onClick={() => onSelectGame?.(game)}
                             style={{ cursor: 'pointer', padding: 'var(--space-lg) var(--space-xl)' }}
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xl)' }}>
-                                    <div className="text-center">
+                                    <div className="text-center" style={{ minWidth: '50px' }}>
                                         <div className="text-bold text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>
                                             {getMonthStr(game.date)}
                                         </div>
@@ -100,31 +119,19 @@ export function GamesTab({ games, players, tournament: _tournament, onSelectGame
                                                 background: isWin ? 'var(--elite)' : isLoss ? 'var(--under)' : 'var(--avg)',
                                                 color: 'white'
                                             }}>
-                                                {isWin ? 'GANA' : isLoss ? 'PIERDE' : 'EMPATE'}
+                                                {statusLabel}
                                             </span>
                                             <h4 className="text-bold" style={{ fontSize: '1.125rem' }}>
-                                                {game.homeAway === 'home' ? `${game.opponent} @ ${teamName}` : `${teamName} @ ${game.opponent}`}
+                                                {visitorTeam} @ {homeTeam}
                                             </h4>
                                         </div>
                                         <div className="text-muted" style={{ fontSize: '0.8125rem', fontWeight: '500' }}>
-                                            {game.homeAway === 'home' ? '🏠 Local' : '✈ Visitante'} • {game.gameType.toUpperCase()}
+                                            {game.homeAway === 'home' ? '🏠 Local' : '✈ Visitante'} • {game.gameType.toUpperCase()} • {game.condition || 'REGULAR'}
                                         </div>
                                     </div>
                                 </div>
 
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '48px' }}>
-                                    {topBatter && topBatter.h > 0 && (
-                                        <div className="text-right" style={{ display: 'none' }}>
-                                            <p className="form-label" style={{ fontSize: '0.625rem' }}>Máximo Rendimiento</p>
-                                            <p className="text-bold" style={{ fontSize: '0.875rem' }}>
-                                                {getPlayerName(topBatter.playerId)}
-                                                <span className="text-mono" style={{ marginLeft: '8px', color: 'var(--accent-primary)' }}>
-                                                    {topBatter.h}/{topBatter.ab}
-                                                </span>
-                                            </p>
-                                        </div>
-                                    )}
-
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: '150px' }}>
                                         <div className="text-mono text-bold" style={{
                                             fontSize: '2rem',
@@ -139,10 +146,10 @@ export function GamesTab({ games, players, tournament: _tournament, onSelectGame
                                         </div>
                                         <div className="text-muted" style={{ fontSize: '0.75rem', fontWeight: '800', marginTop: '4px' }}>
                                             {game.homeAway === 'home' ? (
-                                                <>{game.opponentInningsPlayed?.toFixed(1) || '7.0'} - {game.inningsPlayed?.toFixed(1) || '7.0'} INN</>
+                                                <>{game.opponentInningsPlayed?.toFixed(1) || '7.0'} - {game.inningsPlayed?.toFixed(1) || '7.0'}</>
                                             ) : (
-                                                <>{game.inningsPlayed?.toFixed(1) || '7.0'} - {game.opponentInningsPlayed?.toFixed(1) || '7.0'} INN</>
-                                            )}
+                                                <>{game.inningsPlayed?.toFixed(1) || '7.0'} - {game.opponentInningsPlayed?.toFixed(1) || '7.0'}</>
+                                            )} INN
                                         </div>
                                         <button
                                             className="btn btn-secondary btn-sm mt-sm"

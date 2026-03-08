@@ -65,35 +65,32 @@ export function StatsTab({ games, players, teams, tournaments, tournament, activ
         const standings: Record<string, TeamStandingRow> = {};
 
         const getRow = (name: string): TeamStandingRow => {
-            const normalized = name.trim().toUpperCase();
-            if (!standings[normalized]) {
-                standings[normalized] = {
-                    id: normalized, name: normalized, gp: 0, w: 0, l: 0, t: 0, rf: 0, ra: 0, diff: 0, pct: 0
+            const normalized = name.trim(); // Keep original casing for display, but normalize for keys
+            const key = normalized.toUpperCase();
+            if (!standings[key]) {
+                standings[key] = {
+                    id: key, name: normalized, gp: 0, w: 0, l: 0, t: 0, rf: 0, ra: 0, diff: 0, pct: 0
                 };
             }
-            return standings[normalized];
+            return standings[key];
         };
 
         // 1. Deduplicate games to avoid double counting across different managed teams
         const uniqueGames = new Map<string, { teamA: string, teamB: string, scoreA: number, scoreB: number }>();
 
-        // Filter games for the current tournament name (extra safety)
+        // [R-06] Retrieve all games for the tournament regardless of recorder
         const eventRelatedGames = games.filter(g => {
             const gameTourney = tournaments.find(t => t.id === g.tournamentId);
             return gameTourney && gameTourney.name.trim().toUpperCase() === tournament.name.trim().toUpperCase();
         });
 
         eventRelatedGames.forEach(g => {
-            // Find who recorded this game
-            const tourneyObj = tournaments.find(t => t.id === g.tournamentId);
-            const ownerTeamId = tourneyObj?.participatingTeamIds?.[0];
-            const ownerTeam = teams.find(t => t.id === ownerTeamId);
+            // [R-03] / Section 3.1: Support explicit record tags or infer for legacy
+            const recorderName = (g.teamName || activeTeamName).trim();
+            const opponentName = g.opponent.trim();
 
-            const recorderName = (ownerTeam?.name || activeTeamName).trim().toUpperCase();
-            const opponentName = g.opponent.trim().toUpperCase();
-
-            // Unique key: Date + Event + Sorted Teams + Scores
-            const sortedTeams = [recorderName, opponentName].sort();
+            // [R-10] Single process: Sort team names to create a canonical game key
+            const sortedTeams = [recorderName.toUpperCase(), opponentName.toUpperCase()].sort();
             const sortedScores = [g.teamScore, g.opponentScore].sort();
             const gameKey = `${g.date}|${tournament.name.toUpperCase()}|${sortedTeams.join('-')}|${sortedScores.join('-')}`;
 
@@ -107,7 +104,7 @@ export function StatsTab({ games, players, teams, tournaments, tournament, activ
             }
         });
 
-        // 2. Process unique games and update BOTH sides
+        // 2. Process unique games and update BOTH sides [R-10]
         uniqueGames.forEach(g => {
             const rowA = getRow(g.teamA);
             const rowB = getRow(g.teamB);
@@ -133,10 +130,16 @@ export function StatsTab({ games, players, teams, tournaments, tournament, activ
 
         return Object.values(standings).map(row => {
             row.diff = row.rf - row.ra;
-            row.pct = row.gp > 0 ? (row.w + (row.t * 0.5)) / row.gp : 0;
+            // Section 4.3: %G = W / PJ
+            row.pct = row.gp > 0 ? row.w / row.gp : 0;
             return row;
-        }).sort((a, b) => b.pct - a.pct || b.diff - a.diff);
-    }, [games, tournament, players, teams, tournaments, activeTeamName]);
+        }).sort((a, b) => {
+            // [R-11] Sort by: (1) Wins descending, (2) Run diff descending, (3) Team name ascending
+            if (b.w !== a.w) return b.w - a.w;
+            if (b.diff !== a.diff) return b.diff - a.diff;
+            return a.name.localeCompare(b.name);
+        });
+    }, [games, tournament, teams, tournaments, activeTeamName]);
 
     // ── Column definitions ──────────────────────────────────────────────────
     const standingsColumns = [
