@@ -150,7 +150,7 @@ export function PlayerForm({ player, teamId, teamName, onSave, onCancel, onBulkI
                     <span className="modal-super-title">
                         {teamName}
                     </span>
-                    <h3>{player ? 'Editar' : 'Agregar Nuevo'} Jugador</h3>
+                    <h3>{player ? 'Editar' : '+ Agregar Nuevo'} Jugador</h3>
                     <p>Ingresá los datos individuales del jugador</p>
                 </div>
                 {!player && onBulkImport && (
@@ -257,7 +257,7 @@ export function PlayerForm({ player, teamId, teamName, onSave, onCancel, onBulkI
                         Descartar
                     </button>
                     <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>
-                        {player ? 'Guardar Perfil' : 'Agregar'}
+                        {player ? 'Guardar Perfil' : '+ Agregar'}
                     </button>
                 </div>
             </form>

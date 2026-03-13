@@ -36,30 +36,12 @@ export function GamesTab({ games, tournament: _tournament, onSelectGame, onAddGa
         );
     }
 
-    // ─── Deduplication & Sorting [R-10] ──────────────────────────────────────
-    const uniqueGames = useMemo(() => {
-        const seen = new Map<string, Game>();
-
-        games.forEach(g => {
-            // Use canonical key: Date + Event + Teams (Sorted) + Scores (Sorted)
-            const subject = (g.teamName || teamName).trim().toUpperCase();
-            const opponent = g.opponent.trim().toUpperCase();
-            const sortedTeams = [subject, opponent].sort();
-            const sortedScores = [g.teamScore, g.opponentScore].sort();
-
-            // Note: tournament context is assumed from props or tournamentId
-            const key = `${g.date}|${sortedTeams.join('-')}|${sortedScores.join('-')}`;
-
-            // Prefer records with playerStats if duplicates exist
-            if (!seen.has(key) || (g.playerStats?.length > 0 && seen.get(key)!.playerStats?.length === 0)) {
-                seen.set(key, g);
-            }
-        });
-
-        return Array.from(seen.values()).sort((a, b) =>
+    // ─── Sorting ──────────────────────────────────────
+    const sortedGames = useMemo(() => {
+        return [...games].sort((a, b) =>
             new Date(a.date).getTime() - new Date(b.date).getTime()
         );
-    }, [games, teamName]);
+    }, [games]);
 
     useEffect(() => {
         if (highlightedItemId) {
@@ -76,7 +58,7 @@ export function GamesTab({ games, tournament: _tournament, onSelectGame, onAddGa
     return (
         <div className="dash-content">
             <div style={{ display: 'grid', gap: 'var(--space-lg)' }}>
-                {uniqueGames.map((game: Game) => {
+                {sortedGames.map((game: Game) => {
                     // [R-12] Subject of the record is game.teamName, not the UI context teamName
                     const recordSubject = (game.teamName || teamName);
                     const isWin = game.teamScore > game.opponentScore;
@@ -192,7 +174,7 @@ export function GamesTab({ games, tournament: _tournament, onSelectGame, onAddGa
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
                         <div className="icon-circle" style={{ background: 'var(--bg-card)', fontSize: '1.2rem', width: '40px', height: '40px' }}>+</div>
                         <div>
-                            <h3 className="text-bold" style={{ fontSize: '1rem' }}>Registrar Nuevo Partido</h3>
+                            <h3 className="text-bold" style={{ fontSize: '1rem' }}>+ Registrar Nuevo Partido</h3>
                             <p className="text-muted text-sm">Agregar otro partido a este evento</p>
                         </div>
                     </div>

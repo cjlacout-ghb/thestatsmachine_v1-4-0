@@ -85,19 +85,29 @@ export function AppModals({
                         onDelete={editItem ? () => onDeletePlayer?.((editItem as Player).id) : undefined}
                     />
                 )}
-                {modalType === 'game' && activeTournament && activeTeam && (
-                    <GameForm
-                        key={editItem ? (editItem as Game).id : `new-game-${activeTournament.id}`}
-                        game={editItem as Game | undefined}
-                        tournamentId={activeTournament.id}
-                        initialDate={defaultGameDate}
-                        teamName={activeTeam.name}
-                        players={data.players.filter(p => p.teamId === activeTeam.id)}
-                        onSave={onSaveGame}
-                        onCancel={onClose}
-                        onDelete={editItem ? () => onDeleteGame?.((editItem as Game).id) : undefined}
-                    />
-                )}
+                {modalType === 'game' && activeTournament && activeTeam && (() => {
+                    // Compute initialDate HERE where activeTournament is guaranteed fresh.
+                    // Priority: 1) editing game's own date, 2) parent's defaultGameDate (most recent game date),
+                    // 3) tournament startDate, 4) today.
+                    const gameInitialDate = (editItem as Game | undefined)?.date
+                        || defaultGameDate
+                        || activeTournament.startDate
+                        || new Date().toISOString().split('T')[0];
+                    return (
+                        <GameForm
+                            key={editItem ? (editItem as Game).id : `new-game-${activeTournament.id}-${activeTournament.startDate}-${activeTournament.name}`}
+                            game={editItem as Game | undefined}
+                            tournamentId={activeTournament.id}
+                            tournamentName={activeTournament.name}
+                            initialDate={gameInitialDate}
+                            teamName={activeTeam.name}
+                            players={data.players.filter(p => p.teamId === activeTeam.id)}
+                            onSave={onSaveGame}
+                            onCancel={onClose}
+                            onDelete={editItem ? () => onDeleteGame?.((editItem as Game).id) : undefined}
+                        />
+                    );
+                })()}
                 {modalType === 'player_stats' && editItem && activeTeam && (
                     <PlayerStatsModal
                         game={editItem as Game}

@@ -34,7 +34,7 @@ export function TeamForm({ team, onSave, onCancel }: TeamFormProps) {
     return (
         <div className="modal-content">
             <div className="modal-header">
-                <h3>{team ? 'Actualizar Organización' : 'Registrar Nuevo Equipo'}</h3>
+                <h3>{team ? 'Actualizar Organización' : '+ Registrar Nuevo Equipo'}</h3>
                 <p>{team ? 'Modificá los datos de tu equipo e institución' : 'Creá un nuevo equipo para seguimiento de stats'}</p>
             </div>
 
@@ -82,7 +82,7 @@ export function TeamForm({ team, onSave, onCancel }: TeamFormProps) {
                         Descartar
                     </button>
                     <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>
-                        {team ? 'Guardar Cambios' : 'Registrar Equipo'}
+                        {team ? 'Guardar Cambios' : '+ Registrar Equipo'}
                     </button>
                 </div>
             </form>

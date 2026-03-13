@@ -180,7 +180,7 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                         <div className="team-card-content">
                             <div className="team-card-icon">+</div>
                             <div className="team-card-info">
-                                <h3 className="team-name">Agregar Equipo</h3>
+                                <h3 className="team-name">+ Agregar Equipo</h3>
                                 <p className="team-desc">Registrá otro equipo.</p>
                             </div>
                         </div>

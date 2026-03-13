@@ -58,12 +58,16 @@ function App() {
   );
 
   const filteredGames = useMemo(() => {
-    if (!activeTournament) return [];
+    if (!activeTournament || !activeTeam) return [];
+    // Only games from tournaments that (1) share the same name AND (2) belong to the active team
     const relatedTourneyIds = data.tournaments
-      .filter(t => t.name === activeTournament.name)
+      .filter(t =>
+        t.name === activeTournament.name &&
+        t.participatingTeamIds?.includes(activeTeam.id)
+      )
       .map(t => t.id);
     return data.games.filter(g => relatedTourneyIds.includes(g.tournamentId));
-  }, [data.games, data.tournaments, activeTournament]);
+  }, [data.games, data.tournaments, activeTournament, activeTeam]);
 
   const searchGames = useMemo(
     () => activeTeam
@@ -181,11 +185,35 @@ function App() {
   }, []);
 
   const handleSaveGame = useCallback(async (game: Game) => {
-    const newData = await saveGame(game);
-    setData(newData);
-    setModalType(null);
-    setEditItem(null);
+    setSaveStatus('saving');
+    try {
+      const newData = await saveGame(game);
+      setData(newData);
+      setModalType(null);
+      setEditItem(null);
+      setSaveStatus('saved');
+    } catch (e) {
+      setSaveStatus('unsaved');
+      setEditItem({ 
+        title: 'Error de Guardado', 
+        message: 'No se pudo guardar el partido. Por favor, verifica que todos los datos sean correctos e intentá de nuevo.', 
+        type: 'error' 
+      } as any);
+      setModalType('info');
+    }
   }, []);
+
+  // Sync active entities with newest data
+  useEffect(() => {
+    if (activeTeam) {
+      const refreshed = data.teams.find(t => t.id === activeTeam.id);
+      if (refreshed && refreshed !== activeTeam) setActiveTeam(refreshed);
+    }
+    if (activeTournament) {
+      const refreshed = data.tournaments.find(t => t.id === activeTournament.id);
+      if (refreshed && refreshed !== activeTournament) setActiveTournament(refreshed);
+    }
+  }, [data, activeTeam, activeTournament]);
 
   const handleDeletePlayer = useCallback((id: string) => {
     const player = data.players.find(p => p.id === id);
@@ -211,11 +239,10 @@ function App() {
   }, [data.games]);
 
   const handleShowAddGame = useCallback((targetTournament?: Tournament) => {
-    // When called from the Tournaments tab, the state `activeTournament` might not have updated yet.
-    // Using `targetTournament` avoids showing the fake error popup.
-    const tournamentToCheck = targetTournament?.id ? targetTournament : activeTournament;
+    // Determine which tournament to use
+    const tournamentToUse = targetTournament?.id ? targetTournament : activeTournament;
 
-    if (!tournamentToCheck) {
+    if (!tournamentToUse) {
       if (filteredTournaments.length === 0) {
         setEditItem({
           title: 'Faltan Eventos',
@@ -235,10 +262,8 @@ function App() {
       return;
     }
 
-    if (targetTournament && (!activeTournament || activeTournament.id !== targetTournament.id)) {
-      setActiveTournament(targetTournament);
-    }
-
+    // Always sync activeTournament to the target (ensures context is correct)
+    setActiveTournament(tournamentToUse);
     setEditItem(null);
     setModalType('game');
   }, [activeTournament, filteredTournaments.length]);
@@ -476,7 +501,7 @@ function App() {
                 className="btn btn-secondary" 
                 onClick={() => { setEditItem(null); setModalType('tournament'); }}
               >
-                Agregar Evento
+                + Agregar Evento
               </button>
             )}
           </div>

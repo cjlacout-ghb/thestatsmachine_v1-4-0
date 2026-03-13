@@ -66,7 +66,7 @@ export function TournamentForm({ tournament, availableTeams, initialTeamId, onSa
                         {contextTeamName}
                     </span>
                 )}
-                <h3>{tournament ? 'Actualizar Configuración del Evento' : 'Agregar Nuevo Evento'}</h3>
+                <h3>{tournament ? 'Actualizar Configuración del Evento' : '+ Agregar Nuevo Evento'}</h3>
                 <p>{tournament ? 'Configurá los detalles del torneo y equipos participantes' : 'Configurá un nuevo evento competitivo o liga'}</p>
             </div>
 
@@ -170,7 +170,7 @@ export function TournamentForm({ tournament, availableTeams, initialTeamId, onSa
                         Descartar
                     </button>
                     <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>
-                        {tournament ? 'Guardar Cambios' : 'Crear Evento'}
+                        {tournament ? 'Guardar Cambios' : '+ Crear Evento'}
                     </button>
                 </div>
             </form>

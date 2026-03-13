@@ -42,7 +42,7 @@ export function AppHeader({
                     <div className="logo-icon header-logo-icon">🥎</div>
                     <div className="logo-text">
                         <h1>The Stats Machine</h1>
-                        <span>{activeTeam ? activeTeam.name : 'Panel Principal'} • v1.4.0</span>
+                        <span>v1.4.0</span>
                     </div>
                 </div>
 

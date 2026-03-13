@@ -37,7 +37,7 @@ export function TournamentsTab({
                     message="Creá un evento o liga para comenzar a seguir los partidos."
                     action={
                         <button className="btn btn-new" onClick={onAddTournament}>
-                            Agregar Evento
+                            + Agregar Evento
                         </button>
                     }
                 />
@@ -58,7 +58,7 @@ export function TournamentsTab({
                                         className="btn btn-primary" 
                                         onClick={(e) => { e.stopPropagation(); onAddGameToTournament(t); }}
                                     >
-                                        Agregar Partido
+                                        + Agregar Partido
                                     </button>
                                 </div>
 

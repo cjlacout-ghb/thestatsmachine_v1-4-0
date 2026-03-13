@@ -133,7 +133,8 @@ export function StatsTab({ games, players, teams, tournaments, tournament, activ
             // Section 4.3: %G = W / PJ
             row.pct = row.gp > 0 ? row.w / row.gp : 0;
             return row;
-        }).sort((a, b) => {
+        }).filter(row => row.name.toUpperCase() === (activeTeamName || 'MI EQUIPO').trim().toUpperCase())
+        .sort((a, b) => {
             // [R-11] Sort by: (1) Wins descending, (2) Run diff descending, (3) Team name ascending
             if (b.w !== a.w) return b.w - a.w;
             if (b.diff !== a.diff) return b.diff - a.diff;
@@ -354,10 +355,10 @@ export function StatsTab({ games, players, teams, tournaments, tournament, activ
                     gap: '2px',
                 }}>
                     {tournament && (
-                        <button style={tabStyle(view === 'standings')} onClick={() => setView('standings')}>🏆 Posiciones</button>
+                        <button style={tabStyle(view === 'standings')} onClick={() => setView('standings')}>🏆 Record</button>
                     )}
-                    <button style={tabStyle(view === 'batting')} onClick={() => setView('batting')}>⚾ Batting</button>
-                    <button style={tabStyle(view === 'pitching')} onClick={() => setView('pitching')}>🥎 Pitching</button>
+                    <button style={tabStyle(view === 'batting')} onClick={() => setView('batting')}>🥎 Batting</button>
+                    <button style={tabStyle(view === 'pitching')} onClick={() => setView('pitching')}>⚾ Pitching</button>
                     <button style={tabStyle(view === 'fielding')} onClick={() => setView('fielding')}>🧤 Fielding</button>
                 </div>
 
@@ -381,7 +382,7 @@ export function StatsTab({ games, players, teams, tournaments, tournament, activ
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-xl)' }}>
                         <div className="text-muted" style={{ fontSize: '0.8125rem', fontWeight: '500' }}>
-                            Posiciones calculadas en base a <strong className="text-primary">{games.length}</strong> partidos registrados
+                            Record calculado en base a <strong className="text-primary">{games.length}</strong> partidos registrados
                         </div>
                     </div>
                 </>
@@ -390,15 +391,25 @@ export function StatsTab({ games, players, teams, tournaments, tournament, activ
             {/* BATTING LEADERBOARD */}
             {view === 'batting' && (
                 <>
-                    <div className="stat-table-wrapper card" style={{ padding: 0, overflow: 'hidden' }}>
-                        <StatTable data={battingData} columns={battingColumns} keyField="id" />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-xl)' }}>
-                        <div className="text-muted" style={{ fontSize: '0.8125rem', fontWeight: '500' }}>
-                            Mostrando <strong className="text-primary">{battingData.length}</strong> jugadores con turnos al bate
-                        </div>
-                        <PerformanceLegend />
-                    </div>
+                    {battingData.length === 0 ? (
+                        <EmptyState
+                            icon="🥎"
+                            title="Sin Stats de Batting"
+                            message="Ingresá turnos al bate (AB > 0) en la pestaña Stats Jugadores de un partido para ver los datos de batting aquí."
+                        />
+                    ) : (
+                        <>
+                            <div className="stat-table-wrapper card" style={{ padding: 0, overflow: 'hidden' }}>
+                                <StatTable data={battingData} columns={battingColumns} keyField="id" />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-xl)' }}>
+                                <div className="text-muted" style={{ fontSize: '0.8125rem', fontWeight: '500' }}>
+                                    Mostrando <strong className="text-primary">{battingData.length}</strong> jugadores con turnos al bate
+                                </div>
+                                <PerformanceLegend />
+                            </div>
+                        </>
+                    )}
                 </>
             )}
 
@@ -407,7 +418,7 @@ export function StatsTab({ games, players, teams, tournaments, tournament, activ
                 <>
                     {pitchingData.length === 0 ? (
                         <EmptyState
-                            icon="🥎"
+                            icon="⚾"
                             title="Sin Stats de Pitching"
                             message="Ingresá innings lanzados (IP > 0) en la pestaña Stats Jugadores de un partido para ver los datos de pitching aquí."
                         />

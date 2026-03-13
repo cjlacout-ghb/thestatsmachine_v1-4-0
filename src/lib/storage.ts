@@ -117,7 +117,7 @@ export async function saveTeam(team: Team) {
     if (idx >= 0) data.teams[idx] = team;
     else data.teams.push(team);
     await saveData(data);
-    return data;
+    return { ...data, teams: [...data.teams] };
 }
 
 export async function deleteTeam(id: string) {
@@ -138,10 +138,13 @@ export async function deleteTeam(id: string) {
 export async function saveTournament(tournament: Tournament) {
     const data = await loadData();
     const idx = data.tournaments.findIndex(t => t.id === tournament.id);
-    if (idx >= 0) data.tournaments[idx] = tournament;
-    else data.tournaments.push(tournament);
-    await saveData(data);
-    return data;
+    const newTournaments = [...data.tournaments];
+    if (idx >= 0) newTournaments[idx] = tournament;
+    else newTournaments.push(tournament);
+    
+    const newData = { ...data, tournaments: newTournaments };
+    await saveData(newData);
+    return newData;
 }
 
 export async function deleteTournament(id: string) {
@@ -158,10 +161,13 @@ export async function deleteTournament(id: string) {
 export async function savePlayer(player: Player) {
     const data = await loadData();
     const idx = data.players.findIndex(p => p.id === player.id);
-    if (idx >= 0) data.players[idx] = player;
-    else data.players.push(player);
-    await saveData(data);
-    return data;
+    const newPlayers = [...data.players];
+    if (idx >= 0) newPlayers[idx] = player;
+    else newPlayers.push(player);
+    
+    const newData = { ...data, players: newPlayers };
+    await saveData(newData);
+    return newData;
 }
 
 export async function deletePlayer(id: string) {
@@ -181,10 +187,13 @@ export async function deletePlayer(id: string) {
 export async function saveGame(game: Game) {
     const data = await loadData();
     const idx = data.games.findIndex(g => g.id === game.id);
-    if (idx >= 0) data.games[idx] = game;
-    else data.games.push(game);
-    await saveData(data);
-    return data;
+    const newGames = [...data.games];
+    if (idx >= 0) newGames[idx] = game;
+    else newGames.push(game);
+    
+    const newData = { ...data, games: newGames };
+    await saveData(newData);
+    return newData;
 }
 
 export async function deleteGame(id: string) {
