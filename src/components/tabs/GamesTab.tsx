@@ -2,6 +2,7 @@ import type { Game, Player, Tournament } from '../../types';
 import { EmptyState } from '../ui/EmptyState';
 import { getMonthStr, getDayStr } from '../../lib/dateUtils';
 import { useEffect, useMemo } from 'react';
+import { translateGameType, translateCondition } from '../../lib/translations';
 
 interface GamesTabProps {
     games: Game[];
@@ -11,12 +12,13 @@ interface GamesTabProps {
     onAddGame?: () => void;
     onEditTournament?: (t: Tournament) => void;
     onDeleteTournament?: (id: string) => void;
+    onDeleteGame?: (id: string) => void;
     onOpenPlayerStats?: (game: Game) => void;
     teamName?: string;
     highlightedItemId?: string | null;
 }
 
-export function GamesTab({ games, tournament: _tournament, onSelectGame, onAddGame, onEditTournament: _onEditTournament, onDeleteTournament: _onDeleteTournament, onOpenPlayerStats, teamName = 'Team', highlightedItemId }: GamesTabProps) {
+export function GamesTab({ games, tournament: _tournament, onSelectGame, onAddGame, onEditTournament: _onEditTournament, onDeleteTournament: _onDeleteTournament, onDeleteGame, onOpenPlayerStats, teamName = 'Team', highlightedItemId }: GamesTabProps) {
     if (games.length === 0) {
         return (
             <div className="dash-content">
@@ -126,12 +128,12 @@ export function GamesTab({ games, tournament: _tournament, onSelectGame, onAddGa
                                             </h4>
                                         </div>
                                         <div className="text-muted" style={{ fontSize: '0.8125rem', fontWeight: '500' }}>
-                                            {game.homeAway === 'home' ? '🏠 Local' : '✈ Visitante'} • {game.gameType.toUpperCase()} • {game.condition || 'REGULAR'}
+                                            {game.homeAway === 'home' ? '🏠 Local' : '✈ Visitante'} • {translateGameType(game.gameType)} • {translateCondition(game.condition || 'REGULAR')}
                                         </div>
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '48px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-lg)' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: '150px' }}>
                                         <div className="text-mono text-bold" style={{
                                             fontSize: '2rem',
@@ -161,6 +163,20 @@ export function GamesTab({ games, tournament: _tournament, onSelectGame, onAddGa
                                             {game.playerStats && game.playerStats.length > 0 ? "✅ Stats Jugadores" : "📈 Stats Jugadores"}
                                         </button>
                                     </div>
+
+                                    {onDeleteGame && (
+                                        <button
+                                            className="btn btn-ghost btn-sm"
+                                            title="Eliminar Partido"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDeleteGame(game.id);
+                                            }}
+                                            style={{ color: 'var(--under)', padding: '8px' }}
+                                        >
+                                            🗑️
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import type { Game, Player, PlayerGameStats } from '../../types';
 import { generateId } from '../../lib/storage';
 import { calcBatting, calcPitching, calcFielding, formatAvg, formatERA, formatWHIP, getAvgLevel, getERALevel, getFldLevel } from '../../lib/calculations';
-import { formatLocalDate } from '../../lib/dateUtils';
 import { normalizeInnings } from '../../lib/sportsUtils';
 
 
@@ -47,7 +46,8 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
         return Object.keys(errs).length === 0;
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         if (!validate()) return;
         onSave({
             id: game?.id || generateId(),
@@ -101,10 +101,10 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
             <div className="modal-header">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <div>
-                        <h3>{game ? 'Editar' : 'Agregar Nuevo'} Partido</h3>
-                        <p style={{ fontSize: '0.875rem', opacity: 0.8 }}>
-                            {formatLocalDate(date)} • {homeAway === 'home' ? `${opponent || 'Opponent'} @ ${teamName}` : `${teamName} @ ${opponent || 'Opponent'}`}
-                        </p>
+                        <span className="modal-super-title">
+                            {teamName}
+                        </span>
+                        <h3 style={{ margin: 0 }}>{game ? 'Editar' : 'Agregar Nuevo'} Partido</h3>
                     </div>
                     {game && (
                         <div className="tab-switcher" style={{ display: 'flex', background: 'var(--bg-primary)', padding: '4px', borderRadius: 'var(--radius-md)' }}>
@@ -123,13 +123,14 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
                 </div>
             </div>
 
-            <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+            <form onSubmit={handleSubmit}>
+                <div className="modal-body">
                 {activeSubTab === 'details' ? (
                     <>
                         {/* Meta Data Section */}
                         <div className="form-group mb-lg">
-                            <h4 className="form-label mb-md" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ color: 'var(--accent-primary)' }}>ℹ</span> Detalles del Partido
+                            <h4 className="form-label mb-md">
+                                Detalles del Partido
                             </h4>
                             <div className="grid-2">
                                 <div className="form-group">
@@ -147,10 +148,10 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
                                         value={gameType}
                                         onChange={e => setGameType(e.target.value as Game['gameType'])}
                                     >
-                                        <option value="regular">Temporada Regular</option>
-                                        <option value="playoff">Playoff</option>
-                                        <option value="tournament">Tournament</option>
-                                        <option value="friendly">Friendly</option>
+                                        <option value="regular">temporada regular</option>
+                                        <option value="playoff">playoff</option>
+                                        <option value="tournament">torneo</option>
+                                        <option value="friendly">amistoso</option>
                                     </select>
                                 </div>
                                 <div className="form-group">
@@ -160,20 +161,22 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
                                         value={condition}
                                         onChange={e => setCondition(e.target.value as Game['condition'])}
                                     >
-                                        <option value="REGULAR">REGULAR</option>
-                                        <option value="EXTRA INNINGS">EXTRA INNINGS</option>
-                                        <option value="RUN-AHEAD RULE">RUN-AHEAD RULE (MERCY)</option>
+                                        <option value="REGULAR">regular</option>
+                                        <option value="EXTRA INNINGS">extra innings</option>
+                                        <option value="RUN-AHEAD RULE">diferencia de carreras</option>
                                     </select>
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Local / Visitante</label>
                                     <div style={{ display: 'flex', background: 'var(--bg-primary)', padding: '4px', borderRadius: 'var(--radius-md)' }}>
                                         <button
+                                            type="button"
                                             className="btn"
                                             style={{ flex: 1, background: homeAway === 'home' ? 'white' : 'transparent', boxShadow: homeAway === 'home' ? 'var(--shadow-sm)' : 'none', color: homeAway === 'home' ? 'var(--accent-primary)' : 'var(--text-muted)', padding: '8px' }}
                                             onClick={() => setHomeAway('home')}
                                         >Local</button>
                                         <button
+                                            type="button"
                                             className="btn"
                                             style={{ flex: 1, background: homeAway === 'away' ? 'white' : 'transparent', boxShadow: homeAway === 'away' ? 'var(--shadow-sm)' : 'none', color: homeAway === 'away' ? 'var(--accent-primary)' : 'var(--text-muted)', padding: '8px' }}
                                             onClick={() => setHomeAway('away')}
@@ -192,8 +195,8 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
 
                         {/* Score Section */}
                         <div className="form-group">
-                            <h4 className="form-label mb-md" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ color: 'var(--accent-primary)' }}>📊</span> Marcador Final
+                            <h4 className="form-label mb-md">
+                                Marcador Final
                             </h4>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)' }}>
                                 {/* AWAY TEAM (LEFT) */}
@@ -214,8 +217,8 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
                                                 textTransform: 'uppercase',
                                                 lineHeight: '1.2',
                                                 fontSize: (homeAway === 'away') ? '0.8rem' : '0.75rem'
-                                            }}>{homeAway === 'home' ? (opponent || 'Opponent') : teamName}</span>
-                                            <span style={{ fontSize: '0.65rem', fontWeight: '800', opacity: 0.5 }}>AWAY</span>
+                                            }}>{homeAway === 'home' ? (opponent || 'RIVAL') : teamName}</span>
+                                            <span style={{ fontSize: '0.65rem', fontWeight: '800', opacity: 0.5 }}>VISITANTE</span>
                                         </div>
                                     </div>
                                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -241,7 +244,7 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
                                         />
                                     </div>
                                     <div style={{ marginTop: 'auto', paddingTop: 'var(--space-md)', borderTop: '1px solid var(--border-light)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ fontSize: '0.65rem', fontWeight: '800', color: 'var(--text-muted)' }}>INN PLAYED</span>
+                                        <span style={{ fontSize: '0.65rem', fontWeight: '800', color: 'var(--text-muted)' }}>INN JUGADOS</span>
                                         <input
                                             type="number"
                                             step="0.1"
@@ -275,13 +278,13 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
                                                 textTransform: 'uppercase',
                                                 lineHeight: '1.2',
                                                 fontSize: (homeAway === 'home') ? '0.8rem' : '0.75rem'
-                                            }}>{homeAway === 'home' ? teamName : (opponent || 'Opponent')}</span>
+                                            }}>{homeAway === 'home' ? teamName : (opponent || 'RIVAL')}</span>
                                             <span style={{
                                                 fontSize: '0.65rem',
                                                 fontWeight: '800',
                                                 color: (homeAway === 'home') ? 'var(--accent-primary)' : 'inherit',
                                                 opacity: (homeAway === 'home') ? 1 : 0.5
-                                            }}>HOME</span>
+                                            }}>LOCAL</span>
                                         </div>
                                     </div>
                                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -307,7 +310,7 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
                                         />
                                     </div>
                                     <div style={{ marginTop: 'auto', paddingTop: 'var(--space-md)', borderTop: '1px solid var(--border-light)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ fontSize: '0.65rem', fontWeight: '800', color: 'var(--text-muted)' }}>INN PLAYED</span>
+                                        <span style={{ fontSize: '0.65rem', fontWeight: '800', color: 'var(--text-muted)' }}>INN JUGADOS</span>
                                         <input
                                             type="number"
                                             step="0.1"
@@ -522,13 +525,14 @@ export function GameForm({ game, tournamentId, onSave, onCancel, onDelete, initi
 
             <div className="modal-footer">
                 {game && onDelete && (
-                    <button className="btn btn-danger" onClick={onDelete} style={{ marginRight: 'auto' }}>
+                    <button type="button" className="btn btn-danger" onClick={onDelete} style={{ marginRight: 'auto' }}>
                         🗑 Eliminar
                     </button>
                 )}
-                <button className="btn btn-secondary" onClick={onCancel}>Cancelar</button>
-                <button className="btn btn-primary" onClick={handleSubmit}>Guardar Cambios del Partido</button>
+                <button type="button" className="btn btn-secondary" onClick={onCancel} style={{ flex: 1 }}>Cancelar</button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>Guardar Cambios del Partido</button>
             </div>
+            </form>
         </div>
     );
 }

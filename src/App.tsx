@@ -72,6 +72,27 @@ function App() {
     [data.games, activeTeam, filteredTournaments]
   );
 
+  const defaultGameDate = useMemo(() => {
+    if (!activeTournament) return undefined;
+    
+    // 1. If games exist, use the most recent game's date
+    if (filteredGames.length > 0) {
+      const sorted = [...filteredGames].sort((a, b) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      return sorted[0].date;
+    }
+
+    // 2. Use tournament's start date if defined
+    if (activeTournament.startDate) return activeTournament.startDate;
+
+    // 3. Look for peer tournament (same name) that has a start date
+    const peer = data.tournaments.find(t => 
+      t.name === activeTournament.name && t.startDate
+    );
+    return peer?.startDate;
+  }, [activeTournament, filteredGames, data.tournaments]);
+
   // CRUD Handlers
   const handleSaveTeam = useCallback(async (team: Team) => {
     setSaveStatus('saving');
@@ -109,14 +130,22 @@ function App() {
   }, [activeTeam]);
 
   const handleSaveTournament = useCallback(async (tournament: Tournament) => {
+    const isNew = !data.tournaments.some(t => t.id === tournament.id);
     setSaveStatus('saving');
     const newData = await saveTournament(tournament);
     setData(newData);
     setActiveTournament(tournament);
-    setModalType(null);
-    setEditItem(null);
     setSaveStatus('saved');
-  }, []);
+    
+    if (isNew) {
+      setActiveTab('games');
+      setEditItem(null);
+      setModalType('game');
+    } else {
+      setModalType(null);
+      setEditItem(null);
+    }
+  }, [data.tournaments]);
 
   const handleDeleteTournament = useCallback((id: string) => {
     const tourney = data.tournaments.find(t => t.id === id);
@@ -181,8 +210,12 @@ function App() {
     }
   }, [data.games]);
 
-  const handleShowAddGame = useCallback(() => {
-    if (!activeTournament) {
+  const handleShowAddGame = useCallback((targetTournament?: Tournament) => {
+    // When called from the Tournaments tab, the state `activeTournament` might not have updated yet.
+    // Using `targetTournament` avoids showing the fake error popup.
+    const tournamentToCheck = targetTournament?.id ? targetTournament : activeTournament;
+
+    if (!tournamentToCheck) {
       if (filteredTournaments.length === 0) {
         setEditItem({
           title: 'Faltan Eventos',
@@ -201,6 +234,11 @@ function App() {
       }
       return;
     }
+
+    if (targetTournament && (!activeTournament || activeTournament.id !== targetTournament.id)) {
+      setActiveTournament(targetTournament);
+    }
+
     setEditItem(null);
     setModalType('game');
   }, [activeTournament, filteredTournaments.length]);
@@ -425,14 +463,22 @@ function App() {
             ) : <div style={{ width: '240px' }} />}
           </div>
 
-          <div className="dash-header-bar">
-            <h2 className="text-bold">
+          <div className="dash-header-bar" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 'var(--space-sm)', marginBottom: 'var(--space-xl)' }}>
+            <h2 className="text-bold" style={{ margin: 0 }}>
               {activeTab === 'players' ? 'JUGADORES' :
                 activeTab === 'team' ? 'EQUIPO' :
                   activeTab === 'stats' ? 'ESTADÍSTICAS' :
                     activeTab === 'tournaments' ? 'TORNEOS' :
                       'PARTIDOS'}
             </h2>
+            {activeTab === 'tournaments' && (
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => { setEditItem(null); setModalType('tournament'); }}
+              >
+                Agregar Evento
+              </button>
+            )}
           </div>
 
           <AppContent
@@ -455,11 +501,11 @@ function App() {
             onEditTournament={(t) => { setEditItem(t); setModalType('tournament'); }}
             onDeleteTeam={handleDeleteTeam}
             onDeleteTournament={handleDeleteTournament}
+            onDeleteGame={handleDeleteGame}
             onOpenPlayerStats={(game) => {
               setEditItem(game);
               setModalType('player_stats');
             }}
-            onSwitchTeam={() => setActiveTeam(null)}
           />
 
           <AppModals
@@ -467,6 +513,7 @@ function App() {
             editItem={editItem}
             activeTeam={activeTeam}
             activeTournament={activeTournament}
+            defaultGameDate={defaultGameDate}
             data={data}
             onClose={() => { setModalType(null); setEditItem(null); }}
             onSaveTeam={handleSaveTeam}

@@ -15,6 +15,7 @@ interface AppModalsProps {
     editItem: Team | Tournament | Player | Game | null;
     activeTeam: Team | null;
     activeTournament: Tournament | null;
+    defaultGameDate?: string;
     data: AppData;
     onClose: () => void;
     onSaveTeam: (t: Team) => void;
@@ -35,6 +36,7 @@ export function AppModals({
     editItem,
     activeTeam,
     activeTournament,
+    defaultGameDate,
     data,
     onClose,
     onSaveTeam,
@@ -63,6 +65,7 @@ export function AppModals({
                 )}
                 {modalType === 'tournament' && (
                     <TournamentForm
+                        key={editItem ? (editItem as Tournament).id : 'new-tournament'}
                         tournament={editItem as Tournament | undefined}
                         availableTeams={data.teams}
                         initialTeamId={activeTeam?.id}
@@ -72,6 +75,7 @@ export function AppModals({
                 )}
                 {modalType === 'player' && activeTeam && (
                     <PlayerForm
+                        key={editItem ? (editItem as Player).id : 'new-player'}
                         player={editItem as Player | undefined}
                         teamId={activeTeam.id}
                         teamName={activeTeam.name}
@@ -83,9 +87,10 @@ export function AppModals({
                 )}
                 {modalType === 'game' && activeTournament && activeTeam && (
                     <GameForm
+                        key={editItem ? (editItem as Game).id : `new-game-${activeTournament.id}`}
                         game={editItem as Game | undefined}
                         tournamentId={activeTournament.id}
-                        initialDate={activeTournament.startDate}
+                        initialDate={defaultGameDate}
                         teamName={activeTeam.name}
                         players={data.players.filter(p => p.teamId === activeTeam.id)}
                         onSave={onSaveGame}
@@ -150,9 +155,7 @@ export function AppModals({
                 )}
                 {modalType === 'import_success' && (
                     <ImportSuccessModal
-                        onConfirm={() => {
-                            window.location.reload();
-                        }}
+                        onConfirm={onClose}
                     />
                 )}
                 {modalType === 'import_confirm' && (
@@ -196,7 +199,7 @@ function GenericMessageModal({ title, message, type, onClose }: { title: string,
                 <h3 style={{ color: 'white', margin: 0 }}>{title}</h3>
             </div>
 
-            <div className="modal-body" style={{ padding: 'var(--space-xl)' }}>
+            <div className="modal-body">
                 <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem', lineHeight: '1.5' }}>
                     {message}
                 </p>
@@ -224,7 +227,7 @@ function GenericDeleteModal({ title, message, onClose, onConfirm }: { title: str
                 <h3 style={{ color: 'white', margin: 0 }}>{title}</h3>
             </div>
 
-            <div className="modal-body" style={{ padding: 'var(--space-xl)' }}>
+            <div className="modal-body">
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -287,7 +290,7 @@ function ImportConfirmModal({ onConfirm, onCancel }: { onConfirm: () => void, on
                 </p>
             </div>
 
-            <div className="modal-body" style={{ padding: 'var(--space-xl)' }}>
+            <div className="modal-body">
                 <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '1rem' }}>
                     Si continuas, todos los equipos, jugadores y estadísticas actuales serán <strong>reemplazados</strong> por los del archivo seleccionado.
                 </p>
@@ -340,9 +343,9 @@ function ImportSuccessModal({ onConfirm }: { onConfirm: () => void }) {
                 </p>
             </div>
 
-            <div className="modal-body" style={{ padding: 'var(--space-xl)' }}>
+            <div className="modal-body">
                 <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '1rem' }}>
-                    La aplicación necesita reiniciarse para aplicar los cambios y cargar tu nueva configuración.
+                    Los datos han sido cargados en la sesión actual y están listos para usarse.
                 </p>
             </div>
 
@@ -360,7 +363,7 @@ function ImportSuccessModal({ onConfirm }: { onConfirm: () => void }) {
                     }}
                     onClick={onConfirm}
                 >
-                    Reiniciar Aplicación
+                    Continuar
                 </button>
             </div>
         </div>
@@ -538,8 +541,8 @@ function HelpModal({ onClose }: { onClose: () => void }) {
     const content = lang === 'en' ? helpContentEN : helpContentES;
 
     return (
-        <div className="card">
-            <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="modal-content">
+            <div className="modal-header" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{ margin: 0 }}>{content.title}</h3>
                 <button
                     className="btn btn-secondary"
@@ -550,7 +553,7 @@ function HelpModal({ onClose }: { onClose: () => void }) {
                     <span>{lang === 'en' ? 'Ver en Español' : 'View in English'}</span>
                 </button>
             </div>
-            <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+            <div className="modal-body">
                 <div style={{ display: 'grid', gap: 'var(--space-md)' }}>
                     {content.sections.map((section, index) => (
                         <div key={index} style={{ display: 'flex', gap: 'var(--space-md)', alignItems: 'flex-start' }}>

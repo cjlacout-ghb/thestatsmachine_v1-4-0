@@ -55,34 +55,20 @@ export function TournamentForm({ tournament, availableTeams, initialTeamId, onSa
 
 
     const editingTeam = availableTeams.find(t => t.id === participatingTeamIds[0]);
+    const contextTeam = availableTeams.find(t => t.id === initialTeamId);
+    const contextTeamName = tournament ? editingTeam?.name : contextTeam?.name;
 
     return (
         <div className="modal-content">
             <div className="modal-header">
-                <h3>{tournament ? 'Actualizar Configuración del Evento' : 'Inicializar Nuevo Evento'}</h3>
+                {contextTeamName && (
+                    <span className="modal-super-title">
+                        {contextTeamName}
+                    </span>
+                )}
+                <h3>{tournament ? 'Actualizar Configuración del Evento' : 'Agregar Nuevo Evento'}</h3>
                 <p>{tournament ? 'Configurá los detalles del torneo y equipos participantes' : 'Configurá un nuevo evento competitivo o liga'}</p>
             </div>
-
-            {tournament && (
-                <div className="identity-header">
-                    <div className="identity-badge" style={{ borderColor: 'var(--avg)' }}>
-                        <div className="identity-icon" style={{ background: 'var(--avg)' }}>🏆</div>
-                        <div className="identity-info">
-                            <span className="identity-label">Editando Evento</span>
-                            <span className="identity-name">{tournament.name}</span>
-                        </div>
-                    </div>
-                    {editingTeam && (
-                        <div className="identity-badge">
-                            <div className="identity-icon">🥎</div>
-                            <div className="identity-info">
-                                <span className="identity-label">Equipo Principal</span>
-                                <span className="identity-name">{editingTeam.name}</span>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
 
             <form onSubmit={handleSubmit}>
                 <div className="modal-body">
@@ -161,17 +147,20 @@ export function TournamentForm({ tournament, availableTeams, initialTeamId, onSa
                         <label className="form-label mb-sm">Tipo de Evento (Opcional)</label>
 
                         <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
-                            {['tournament', 'league', 'friendly'].map(t => (
-                                <button
-                                    key={t}
-                                    type="button"
-                                    className={`btn ${type === t ? 'btn-primary' : 'btn-secondary'}`}
-                                    onClick={() => setType(t as Tournament['type'])}
-                                    style={{ flex: 1, textTransform: 'capitalize' }}
-                                >
-                                    {t}
-                                </button>
-                            ))}
+                            {['tournament', 'league', 'friendly'].map(t => {
+                                const labels: Record<string, string> = { tournament: 'torneo', league: 'liga', friendly: 'amistoso' };
+                                return (
+                                    <button
+                                        key={t}
+                                        type="button"
+                                        className={`btn ${type === t ? 'btn-primary' : 'btn-secondary'}`}
+                                        onClick={() => setType(t as Tournament['type'])}
+                                        style={{ flex: 1 }}
+                                    >
+                                        {labels[t]}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

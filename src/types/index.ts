@@ -35,7 +35,7 @@ export interface Game {
     teamName: string; // The team that owns this specific record
     opponent: string;
     homeAway: 'home' | 'away';
-    gameType: 'regular' | 'playoff' | 'championship' | 'friendly';
+    gameType: 'regular' | 'playoff' | 'championship' | 'friendly' | 'tournament';
     condition: 'REGULAR' | 'EXTRA INNINGS' | 'RUN-AHEAD RULE';
     teamScore: number;
     opponentScore: number;

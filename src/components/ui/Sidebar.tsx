@@ -113,7 +113,7 @@ export function Sidebar({ activeTab, setActiveTab, activeTeam, activeTournament,
                                 onClick={() => setActiveTab('stats')}
                             >
                                 <span className="icon">📊</span>
-                                <span>Stats</span>
+                                <span>Estadísticas</span>
                             </button>
                         </nav>
                         <button className="btn-link-sm mt-md text-danger" onClick={onExitTournament}>

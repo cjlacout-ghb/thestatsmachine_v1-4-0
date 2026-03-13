@@ -80,15 +80,7 @@ export function PlayerForm({ player, teamId, teamName, onSave, onCancel, onBulkI
         return (
             <div className="modal-content">
                 <div className="modal-header">
-                    <span style={{
-                        fontSize: '0.7rem',
-                        fontWeight: 900,
-                        color: 'rgba(255,255,255,0.9)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.15em',
-                        display: 'block',
-                        marginBottom: '4px'
-                    }}>
+                    <span className="modal-super-title">
                         {teamName}
                     </span>
                     <h3>Importación Masiva de Jugadores</h3>
@@ -155,15 +147,7 @@ export function PlayerForm({ player, teamId, teamName, onSave, onCancel, onBulkI
         <div className="modal-content">
             <div className="modal-header" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <span style={{
-                        fontSize: '0.7rem',
-                        fontWeight: 900,
-                        color: 'rgba(255,255,255,0.9)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.15em',
-                        display: 'block',
-                        marginBottom: '4px'
-                    }}>
+                    <span className="modal-super-title">
                         {teamName}
                     </span>
                     <h3>{player ? 'Editar' : 'Agregar Nuevo'} Jugador</h3>

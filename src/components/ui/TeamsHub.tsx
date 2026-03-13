@@ -135,7 +135,6 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                                 <div
                                     onClick={() => onSelectTeam(team)}
                                     style={{ position: 'absolute', inset: 0, zIndex: 1, cursor: 'pointer' }}
-                                    title={`Seleccionar ${team.name}`}
                                 />
 
                                 {/* Sección principal del card — estructura correcta */}
@@ -158,7 +157,6 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                                             type="button"
                                             className="btn btn-ghost btn-sm"
                                             onClick={(e) => { e.stopPropagation(); onEditTeam?.(team); }}
-                                            title="Editar Equipo"
                                         >
                                             ⚙️ Editar
                                         </button>
@@ -166,7 +164,6 @@ export function TeamsHub({ teams, tournaments, games, onSelectTeam, onAddTeam, o
                                             type="button"
                                             className="btn btn-ghost btn-sm text-danger"
                                             onClick={(e) => { e.stopPropagation(); onDeleteTeam?.(team); }}
-                                            title="Eliminar Equipo"
                                         >
                                             🗑 Eliminar
                                         </button>

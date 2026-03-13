@@ -76,6 +76,34 @@ body {
   flex-direction: column;
 }
 
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* slate-300 */
+  border-radius: var(--radius-full);
+  border: 4px solid var(--bg-card);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* slate-400 */
+  border: 4px solid var(--bg-card);
+  background-clip: padding-box;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
 /* App Layout */
 .app {
   display: flex;
@@ -532,8 +560,17 @@ body {
   width: 100%;
   max-width: 600px;
   max-height: 90vh;
-  overflow-y: auto;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-content > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .modal-header {
@@ -543,6 +580,17 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.modal-super-title {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  display: block;
+  margin-bottom: 4px;
 }
 
 .modal-header h3 {
@@ -675,6 +723,9 @@ body {
 
 .modal-body {
   padding: var(--space-xl);
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .modal-footer {
@@ -683,6 +734,7 @@ body {
   display: flex;
   gap: var(--space-md);
   background: var(--bg-primary);
+  flex-shrink: 0;
 }
 
 /* Tab Switcher */
